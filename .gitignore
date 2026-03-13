@@ -1,0 +1,18 @@
+.*
+!.editorconfig
+!.gitattributes
+!.gitignore
+!.github
+!.claude/
+!.commitlintrc.yml
+
+/config/
+build/
+generated/
+out/
+target/
+
+# IntelliJ
+*.iws
+*.iml
+*.ipr
