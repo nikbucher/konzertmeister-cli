@@ -1,0 +1,26 @@
+[package]
+name = "km"
+version = "0.1.0"
+edition = "2024"
+description = "CLI for the Konzertmeister API — list and create appointments for music associations"
+authors = ["Niklaus Bucher"]
+license = "MIT"
+repository = "https://github.com/nikbucher/konzertmeister-cli"
+readme = "README.md"
+keywords = ["konzertmeister", "cli", "appointments", "music"]
+categories = ["command-line-utilities"]
+
+[dependencies]
+anyhow = "1"
+chrono = { version = "0.4", features = ["serde"] }
+chrono-tz = "0.10"
+clap = { version = "4", features = ["derive"] }
+comfy-table = "7"
+directories = "6"
+env_logger = "0.11"
+log = "0.4"
+rpassword = "7"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "1"
+ureq = { version = "3", features = ["json"] }
