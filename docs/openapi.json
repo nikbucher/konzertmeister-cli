@@ -1,0 +1,1377 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Konzertmeister API",
+    "description": "Konzertmeister API",
+    "termsOfService": "http://swagger.io/terms/",
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://springdoc.org"
+    },
+    "version": "v3"
+  },
+  "servers": [
+    {
+      "url": "http://rest.konzertmeister.app",
+      "description": "Generated server url"
+    }
+  ],
+  "paths": {
+    "/api/v4/org/m2m/appointments": {
+      "post": {
+        "tags": [
+          "org-resource-v-4"
+        ],
+        "operationId": "getUpcomingAppointmentsOfOrgWithApiKey",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppointmentMachineFilterInputDtoV4"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AppointmentM2mDtoV4"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v4/app/m2m/create": {
+      "post": {
+        "tags": [
+          "appointment-resource-v-4"
+        ],
+        "operationId": "createM2mFromTemplate",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAppointmentFromTemplateM2mInputDtoV4"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentM2mDtoV4"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AppointmentMachineFilterInputDtoV4": {
+        "type": "object",
+        "properties": {
+          "filterStart": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "filterEnd": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "typeIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "activationStatusList": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ACTIVE",
+                "CANCELLED"
+              ]
+            }
+          },
+          "publishedStatus": {
+            "type": "string",
+            "enum": [
+              "ALL",
+              "PUBLISHED",
+              "UNPUBLISHED"
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sortMode": {
+            "type": "string",
+            "enum": [
+              "STARTDATE",
+              "DEADLINE"
+            ]
+          },
+          "dateMode": {
+            "type": "string",
+            "enum": [
+              "UPCOMING",
+              "FROM_DATE"
+            ]
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "AddressDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "countryIso3": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "postalCode": {
+            "type": "string"
+          },
+          "streetline1": {
+            "type": "string"
+          },
+          "streetline2": {
+            "type": "string"
+          }
+        }
+      },
+      "AppointmentM2mDtoV4": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "org": {
+            "$ref": "#/components/schemas/OrgDtoV2"
+          },
+          "typId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "statusDeadline": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "remindDeadline": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "timeUndefined": {
+            "type": "boolean"
+          },
+          "location": {
+            "$ref": "#/components/schemas/LocationDto"
+          },
+          "meetingPoint": {
+            "$ref": "#/components/schemas/MeetingPointDtoV3"
+          },
+          "group": {
+            "$ref": "#/components/schemas/GroupDtoV3"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TagDtoV2"
+            }
+          },
+          "cancelDescription": {
+            "type": "string"
+          },
+          "publicSharingUrl": {
+            "type": "string",
+            "format": "url"
+          },
+          "privateLinkURL": {
+            "type": "string",
+            "format": "url"
+          },
+          "room": {
+            "$ref": "#/components/schemas/RoomDtoV4"
+          },
+          "timezoneId": {
+            "type": "string"
+          },
+          "externalAppointmentLink": {
+            "type": "string"
+          },
+          "published": {
+            "type": "boolean"
+          },
+          "checkinQrCodeImageUrl": {
+            "type": "string",
+            "format": "url"
+          }
+        }
+      },
+      "AssociationDistrictDtoV4": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "association": {
+            "$ref": "#/components/schemas/AssociationDtoV4"
+          },
+          "state": {
+            "$ref": "#/components/schemas/AssociationStateDtoV4"
+          },
+          "imageUrl": {
+            "type": "string",
+            "format": "url"
+          },
+          "imageGenerated": {
+            "type": "boolean"
+          }
+        }
+      },
+      "AssociationDtoV4": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string",
+            "format": "url"
+          },
+          "imageGenerated": {
+            "type": "boolean"
+          },
+          "timezoneId": {
+            "type": "string"
+          }
+        }
+      },
+      "AssociationStateDtoV4": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "associationId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "FolderDtoV3": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "parentOrgId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "parentId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sizeKiloBytes": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "roleId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "folders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FolderDtoV3"
+            }
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KmFileDtoV3"
+            }
+          },
+          "liEditAllowed": {
+            "type": "boolean"
+          },
+          "liCreateAllowed": {
+            "type": "boolean"
+          },
+          "childrenCount": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "systemFolder": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "creatorKmUserName": {
+            "type": "string"
+          },
+          "grantedOrgs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrgDtoV2"
+            }
+          },
+          "privateLinkURL": {
+            "type": "string",
+            "format": "url"
+          },
+          "privateContent": {
+            "type": "boolean"
+          }
+        }
+      },
+      "GroupDtoV3": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parentName": {
+            "type": "string"
+          },
+          "parentId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "typId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "liRoleId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "imageUrl": {
+            "type": "string",
+            "format": "url"
+          },
+          "adminKmUserId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "numApprovedMembers": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "leaderNames": {
+            "type": "string"
+          },
+          "secretaryNames": {
+            "type": "string"
+          },
+          "coLeaderNames": {
+            "type": "string"
+          },
+          "grouporg": {
+            "type": "boolean"
+          },
+          "secretaryCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "leaderCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "coLeaderCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "paymentPlan": {
+            "$ref": "#/components/schemas/PaymentPlanDto"
+          },
+          "attendanceVisibility": {
+            "type": "string",
+            "enum": [
+              "DEFAULT",
+              "SUBORG",
+              "ALL"
+            ]
+          },
+          "descriptionVisibility": {
+            "type": "string",
+            "enum": [
+              "DEFAULT",
+              "SUBORG",
+              "ALL"
+            ]
+          },
+          "imageGenerated": {
+            "type": "boolean"
+          },
+          "timezoneId": {
+            "type": "string"
+          },
+          "showAllAppointmentsToMembers": {
+            "type": "boolean"
+          },
+          "leaderUsers": {
+            "type": "array",
+            "writeOnly": true,
+            "items": {
+              "$ref": "#/components/schemas/KmUserMember"
+            }
+          },
+          "secretaryUsers": {
+            "type": "array",
+            "writeOnly": true,
+            "items": {
+              "$ref": "#/components/schemas/KmUserMember"
+            }
+          },
+          "coLeaderUsers": {
+            "type": "array",
+            "writeOnly": true,
+            "items": {
+              "$ref": "#/components/schemas/KmUserMember"
+            }
+          }
+        }
+      },
+      "InvoiceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "invoiceDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "intervalStart": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "intervalEnd": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "invoiceNumber": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number",
+            "format": "double"
+          },
+          "storageAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "amountBalanceUsed": {
+            "type": "number",
+            "format": "double"
+          },
+          "sum": {
+            "type": "number",
+            "format": "double"
+          },
+          "receiverKmUserId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "receiverAddressId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "invoiceFile": {
+            "type": "string",
+            "format": "url"
+          },
+          "vatId": {
+            "type": "string"
+          },
+          "receiverFirstName": {
+            "type": "string"
+          },
+          "receiverLastName": {
+            "type": "string"
+          },
+          "cancellation": {
+            "type": "boolean"
+          },
+          "cancelledInvoiceId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "cancelledInvoiceNumber": {
+            "type": "string"
+          },
+          "cancelledByInvoiceId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "cancelledByInvoiceNumber": {
+            "type": "string"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "TRANSFER",
+              "STRIPE"
+            ]
+          },
+          "stripePaymentMethod": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          }
+        }
+      },
+      "KmFileDtoV3": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "extension": {
+            "type": "string"
+          },
+          "sizeKiloBytes": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "folderId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "fileURL": {
+            "type": "string",
+            "format": "url"
+          },
+          "downloadWebURL": {
+            "type": "string",
+            "format": "url"
+          },
+          "thumbnailURL": {
+            "type": "string",
+            "format": "url"
+          },
+          "compressedURL": {
+            "type": "string",
+            "format": "url"
+          },
+          "liEditAllowed": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "creatorKmUserName": {
+            "type": "string"
+          }
+        }
+      },
+      "KmUser": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "firstname": {
+            "type": "string"
+          },
+          "lastname": {
+            "type": "string"
+          },
+          "mail": {
+            "type": "string"
+          },
+          "mobilePhone": {
+            "type": "string"
+          },
+          "birthday": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "addressId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "password": {
+            "type": "string"
+          },
+          "registered": {
+            "type": "boolean"
+          },
+          "mailEnabled": {
+            "type": "boolean"
+          },
+          "mailPinnwallEnabled": {
+            "type": "boolean"
+          },
+          "localAppReminderEnabled": {
+            "type": "boolean"
+          },
+          "pushEnabled": {
+            "type": "boolean"
+          },
+          "smsEnabled": {
+            "type": "boolean"
+          },
+          "realMail": {
+            "type": "boolean"
+          },
+          "calId": {
+            "type": "string"
+          },
+          "mailId": {
+            "type": "string"
+          },
+          "resetPasswordId": {
+            "type": "string"
+          },
+          "unsubscribeId": {
+            "type": "string"
+          },
+          "newsletterUnsubscribeId": {
+            "type": "string"
+          },
+          "mailVerified": {
+            "type": "boolean"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "timezoneId": {
+            "type": "string"
+          },
+          "touAccepted": {
+            "type": "boolean"
+          },
+          "trackingEnabled": {
+            "type": "boolean"
+          },
+          "invitationCode": {
+            "type": "string"
+          },
+          "newsletterEnabled": {
+            "type": "boolean"
+          },
+          "userDisplay": {
+            "type": "string",
+            "enum": [
+              "FIRST_LAST",
+              "LAST_FIRST"
+            ]
+          },
+          "userSort": {
+            "type": "string",
+            "enum": [
+              "FIRST_LAST",
+              "LAST_FIRST"
+            ]
+          },
+          "allowGoogleServices": {
+            "type": "boolean"
+          },
+          "allowAppleServices": {
+            "type": "boolean"
+          },
+          "touAcceptedVersion": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "autoAttendAppointmentOnCreate": {
+            "type": "boolean"
+          },
+          "showAttendanceProfilePictures": {
+            "type": "boolean"
+          },
+          "showDashboardOnStart": {
+            "type": "boolean"
+          },
+          "kmPictureId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "passwordBcrypt": {
+            "type": "string"
+          },
+          "uiSettings": {
+            "type": "string"
+          },
+          "totpSecret": {
+            "type": "string"
+          },
+          "activeMember": {
+            "type": "boolean"
+          },
+          "mailReceiverSubaccount": {
+            "$ref": "#/components/schemas/KmUser"
+          }
+        }
+      },
+      "KmUserMember": {
+        "type": "object",
+        "properties": {
+          "kmUser": {
+            "$ref": "#/components/schemas/KmUser"
+          },
+          "member": {
+            "$ref": "#/components/schemas/Member"
+          }
+        }
+      },
+      "LocationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "geo": {
+            "type": "boolean"
+          },
+          "formattedAddress": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          }
+        }
+      },
+      "MeetingPointDtoV3": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "meetingDateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "meetingLocation": {
+            "$ref": "#/components/schemas/LocationDto"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "Member": {
+        "required": [
+          "kmUserId",
+          "orgId",
+          "roleId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "kmUserId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "orgId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "roleId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "statusId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "group": {
+            "type": "boolean"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "MEMBER",
+              "LEADER",
+              "SECRETARY",
+              "CO_LEADER"
+            ]
+          }
+        }
+      },
+      "OrgDtoV2": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parentName": {
+            "type": "string"
+          },
+          "parentId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "typId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "liRoleId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "liPendingRequest": {
+            "type": "boolean"
+          },
+          "numApprovedMembers": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "leaderNames": {
+            "type": "string"
+          },
+          "secretaryNames": {
+            "type": "string"
+          },
+          "coLeaderNames": {
+            "type": "string"
+          },
+          "secretaryCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "leaderCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "coLeaderCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "token": {
+            "type": "string"
+          },
+          "attendanceVisibleOnlyLeaders": {
+            "type": "boolean"
+          },
+          "sort": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "imageUrl": {
+            "type": "string",
+            "format": "url"
+          },
+          "adminKmUserId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "adminKmUserName": {
+            "type": "string"
+          },
+          "address": {
+            "$ref": "#/components/schemas/AddressDto"
+          },
+          "paymentPlan": {
+            "$ref": "#/components/schemas/PaymentPlanDto"
+          },
+          "attendanceVisibility": {
+            "type": "string",
+            "enum": [
+              "DEFAULT",
+              "SUBORG",
+              "ALL"
+            ]
+          },
+          "descriptionVisibility": {
+            "type": "string",
+            "enum": [
+              "DEFAULT",
+              "SUBORG",
+              "ALL"
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TagDtoV2"
+            }
+          },
+          "select": {
+            "type": "boolean"
+          },
+          "showAllAppointmentsToMembers": {
+            "type": "boolean"
+          },
+          "allowMemberSendMessage": {
+            "type": "boolean"
+          },
+          "rootFolderId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "referralCode": {
+            "type": "string"
+          },
+          "privateLinkURL": {
+            "type": "string",
+            "format": "url"
+          },
+          "publicSiteId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "attInvitedActive": {
+            "type": "boolean"
+          },
+          "grouporg": {
+            "type": "boolean"
+          },
+          "imageGenerated": {
+            "type": "boolean"
+          },
+          "timezoneId": {
+            "type": "string"
+          },
+          "umbrellaOrgId": {
+            "type": "string"
+          },
+          "associationDistrict": {
+            "$ref": "#/components/schemas/AssociationDistrictDtoV4"
+          },
+          "leaderUsers": {
+            "type": "array",
+            "writeOnly": true,
+            "items": {
+              "$ref": "#/components/schemas/KmUserMember"
+            }
+          },
+          "secretaryUsers": {
+            "type": "array",
+            "writeOnly": true,
+            "items": {
+              "$ref": "#/components/schemas/KmUserMember"
+            }
+          },
+          "coLeaderUsers": {
+            "type": "array",
+            "writeOnly": true,
+            "items": {
+              "$ref": "#/components/schemas/KmUserMember"
+            }
+          }
+        }
+      },
+      "PaymentIntervalDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "paymentPlanId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ORDERED",
+              "WAITING_FOR_PAYMENT",
+              "PAID",
+              "PAYMENT_OVERDUE",
+              "CANCELLED"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "BASIC",
+              "PRO_30",
+              "PRO_60",
+              "PRO_UNLIMITED"
+            ]
+          },
+          "storagePlanType": {
+            "type": "string",
+            "enum": [
+              "BASIC",
+              "HALF_GB",
+              "TWO_GB",
+              "FIVE_GB",
+              "TEN_GB"
+            ]
+          },
+          "payEveryIntervalType": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "DEV_DAY",
+              "DEV_WEEK",
+              "MONTH",
+              "YEAR"
+            ]
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "invoice": {
+            "$ref": "#/components/schemas/InvoiceDto"
+          },
+          "cancellationInvoice": {
+            "$ref": "#/components/schemas/InvoiceDto"
+          },
+          "createdDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "trial": {
+            "type": "boolean"
+          },
+          "autoExtended": {
+            "type": "boolean"
+          },
+          "cancelled": {
+            "type": "boolean"
+          },
+          "cancelType": {
+            "type": "string",
+            "enum": [
+              "MANUALLY",
+              "ADMIN_TRANSITION",
+              "UPDATE_SUBSCRIPTION",
+              "CANCEL_INVOICE"
+            ]
+          },
+          "cancelDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "remainingValue": {
+            "type": "number",
+            "format": "double"
+          },
+          "remainingDaysInInterval": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "responsibleName": {
+            "type": "string"
+          },
+          "responsibleMail": {
+            "type": "string"
+          },
+          "paymentReceivedDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PaymentPlanDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "orgId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "BASIC",
+              "PRO_30",
+              "PRO_60",
+              "PRO_UNLIMITED"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OK",
+              "LOCKED"
+            ]
+          },
+          "payEveryIntervalType": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "DEV_DAY",
+              "DEV_WEEK",
+              "MONTH",
+              "YEAR"
+            ]
+          },
+          "balance": {
+            "type": "number",
+            "format": "double"
+          },
+          "vatId": {
+            "type": "string"
+          },
+          "invoiceFirstName": {
+            "type": "string"
+          },
+          "invoiceLastName": {
+            "type": "string"
+          },
+          "invoiceAdditionalOrgName": {
+            "type": "string"
+          },
+          "invoiceAdditionalReceiverMail": {
+            "type": "string"
+          },
+          "invoiceAddress": {
+            "$ref": "#/components/schemas/AddressDto"
+          },
+          "numCurrentMembers": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "numIncludedMembers": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "numIncludedSubstitutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "addingMembersAvailable": {
+            "type": "boolean"
+          },
+          "proFeaturesAvailable": {
+            "type": "boolean"
+          },
+          "createAppointmentAvailable": {
+            "type": "boolean"
+          },
+          "createFileItemAvailable": {
+            "type": "boolean"
+          },
+          "trialAvailable": {
+            "type": "boolean"
+          },
+          "masterId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "masterOrg": {
+            "$ref": "#/components/schemas/OrgDtoV2"
+          },
+          "slaveOrgs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrgDtoV2"
+            }
+          },
+          "storagePlanType": {
+            "type": "string",
+            "enum": [
+              "BASIC",
+              "HALF_GB",
+              "TWO_GB",
+              "FIVE_GB",
+              "TEN_GB"
+            ]
+          },
+          "rootFolder": {
+            "$ref": "#/components/schemas/FolderDtoV3"
+          },
+          "billingGroupStorageKilos": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "hasSlaveOrgs": {
+            "type": "boolean"
+          },
+          "currentInterval": {
+            "$ref": "#/components/schemas/PaymentIntervalDto"
+          }
+        }
+      },
+      "RoomDtoV4": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "capacity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "address": {
+            "$ref": "#/components/schemas/AddressDto"
+          },
+          "ownerParentOrg": {
+            "$ref": "#/components/schemas/OrgDtoV2"
+          },
+          "publicsite": {
+            "type": "boolean"
+          },
+          "liMode": {
+            "type": "string",
+            "enum": [
+              "READ",
+              "WRITE"
+            ]
+          },
+          "notificationsEnabled": {
+            "type": "boolean"
+          }
+        }
+      },
+      "TagDtoV2": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "tag": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateAppointmentFromTemplateM2mInputDtoV4": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "startZoned": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "appointmentTemplateExtId": {
+            "type": "string"
+          },
+          "creatorMail": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
