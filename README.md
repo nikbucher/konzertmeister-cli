@@ -11,6 +11,12 @@ A command-line tool for the [Konzertmeister](https://konzertmeister.app) API. Li
 
 ## Installation
 
+### Homebrew (macOS & Linux)
+
+```sh
+brew install nikbucher/tap/konzertmeister-cli
+```
+
 ### Pre-built binaries
 
 Download the latest binary for your platform from [GitHub Releases](https://github.com/nikbucher/konzertmeister-cli/releases):
