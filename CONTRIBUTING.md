@@ -40,6 +40,22 @@ Examples:
 - `docs: update vision with distribution strategy`
 - `ci: add commitlint to PR checks`
 
+## Test–Use Case Traceability
+
+Each test is linked to its use case via a naming convention and a doc comment:
+
+```rust
+/// UC-002 | BR-008: Date Input Normalization
+#[test]
+fn uc002_normalize_plain_date_from() { ... }
+```
+
+- **Test name:** prefix with `uc{nr}_` (e.g. `uc001_`, `uc002_`) for filtering with `cargo test uc001`
+- **Doc comment, line 1:** `UC-{nr} | {Scenario or Business Rule}` — references the scenario (Main Success, A1, A2, …) or business rule (BR-001, BR-002, …) from `docs/use_cases/`
+- **Doc comment, line 2 (optional):** `Business Rules: BR-001, BR-002` — only when additional business rules apply beyond what line 1 already states
+
+Omit the doc comment only if the use case mapping is already fully expressed by the test name.
+
 ## CI Checks
 
 Make sure CI passes before submitting:

@@ -165,53 +165,63 @@ fn build_filter(args: &ListArgs) -> AppointmentFilterInput {
 mod tests {
 	use super::*;
 
+	/// UC-002 | BR-008: Date Input Normalization
 	#[test]
-	fn normalize_plain_date_from() {
+	fn uc002_normalize_plain_date_from() {
 		assert_eq!(normalize_datetime("2026-01-01", "00:00:00Z"), "2026-01-01T00:00:00Z");
 	}
 
+	/// UC-002 | BR-008: Date Input Normalization
 	#[test]
-	fn normalize_plain_date_to() {
+	fn uc002_normalize_plain_date_to() {
 		assert_eq!(normalize_datetime("2026-12-31", "23:59:59Z"), "2026-12-31T23:59:59Z");
 	}
 
+	/// UC-002 | BR-008: Date Input Normalization
 	#[test]
-	fn normalize_naive_datetime_appends_z() {
+	fn uc002_normalize_naive_datetime_appends_z() {
 		assert_eq!(normalize_datetime("2026-01-01T14:00:00", "00:00:00Z"), "2026-01-01T14:00:00Z");
 	}
 
+	/// UC-002 | BR-008: Date Input Normalization
 	#[test]
-	fn normalize_utc_datetime_unchanged() {
+	fn uc002_normalize_utc_datetime_unchanged() {
 		assert_eq!(normalize_datetime("2026-01-01T14:00:00Z", "00:00:00Z"), "2026-01-01T14:00:00Z");
 	}
 
+	/// UC-002 | BR-008: Date Input Normalization
 	#[test]
-	fn normalize_positive_offset_unchanged() {
+	fn uc002_normalize_positive_offset_unchanged() {
 		assert_eq!(normalize_datetime("2026-01-01T14:00:00+02:00", "00:00:00Z"), "2026-01-01T14:00:00+02:00");
 	}
 
+	/// UC-002 | BR-008: Date Input Normalization
 	#[test]
-	fn normalize_negative_offset_unchanged() {
+	fn uc002_normalize_negative_offset_unchanged() {
 		assert_eq!(normalize_datetime("2026-01-01T14:00:00-05:00", "00:00:00Z"), "2026-01-01T14:00:00-05:00");
 	}
 
+	/// UC-003 | BR-009: Naive Datetime Timezone Resolution
 	#[test]
-	fn resolve_start_utc_passthrough() {
+	fn uc003_resolve_start_utc_passthrough() {
 		assert_eq!(resolve_start_zoned("2026-06-15T19:30:00Z").unwrap(), "2026-06-15T19:30:00Z");
 	}
 
+	/// UC-003 | BR-009: Naive Datetime Timezone Resolution
 	#[test]
-	fn resolve_start_positive_offset_passthrough() {
+	fn uc003_resolve_start_positive_offset_passthrough() {
 		assert_eq!(resolve_start_zoned("2026-06-15T19:30:00+02:00").unwrap(), "2026-06-15T19:30:00+02:00");
 	}
 
+	/// UC-003 | BR-009: Naive Datetime Timezone Resolution
 	#[test]
-	fn resolve_start_negative_offset_passthrough() {
+	fn uc003_resolve_start_negative_offset_passthrough() {
 		assert_eq!(resolve_start_zoned("2026-06-15T19:30:00-05:00").unwrap(), "2026-06-15T19:30:00-05:00");
 	}
 
+	/// UC-003 | BR-009: Naive Datetime Timezone Resolution
 	#[test]
-	fn resolve_start_naive_adds_local_offset() {
+	fn uc003_resolve_start_naive_adds_local_offset() {
 		let result = resolve_start_zoned("2026-06-15T19:30:00").unwrap();
 		// Must start with the same date/time and have an offset
 		assert!(result.starts_with("2026-06-15T19:30:00"));
@@ -219,21 +229,24 @@ mod tests {
 		assert!(!result.ends_with('Z'));
 	}
 
+	/// UC-003 | BR-009: Naive Datetime Timezone Resolution
 	#[test]
-	fn resolve_start_naive_short_format() {
+	fn uc003_resolve_start_naive_short_format() {
 		let result = resolve_start_zoned("2026-06-15T19:30").unwrap();
 		assert!(result.starts_with("2026-06-15T19:30:00"));
 	}
 
+	/// UC-003 | BR-009: Naive Datetime Timezone Resolution
 	#[test]
-	fn resolve_start_date_only_rejected() {
+	fn uc003_resolve_start_date_only_rejected() {
 		let result = resolve_start_zoned("2026-06-15");
 		assert!(result.is_err());
 		assert!(result.unwrap_err().to_string().contains("requires a datetime"));
 	}
 
+	/// UC-003 | BR-009: Naive Datetime Timezone Resolution
 	#[test]
-	fn resolve_start_invalid_format_rejected() {
+	fn uc003_resolve_start_invalid_format_rejected() {
 		let result = resolve_start_zoned("2026-06-15Tnonsense");
 		assert!(result.is_err());
 		assert!(result.unwrap_err().to_string().contains("Invalid datetime format"));

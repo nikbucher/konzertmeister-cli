@@ -178,8 +178,9 @@ pub fn handle_path() -> anyhow::Result<()> {
 mod tests {
 	use super::*;
 
+	/// UC-001 | Main Success Scenario
 	#[test]
-	fn config_round_trip() {
+	fn uc001_config_round_trip() {
 		let config = KmConfig {
 			default: Some("test".to_string()),
 			profiles: BTreeMap::from([(
@@ -199,8 +200,9 @@ mod tests {
 		assert_eq!(deserialized.profiles["test"].creator_mail.as_deref(), Some("test@example.com"));
 	}
 
+	/// UC-001 | BR-004: Association Selection
 	#[test]
-	fn resolve_profile_explicit() {
+	fn uc001_resolve_profile_explicit() {
 		let config = KmConfig {
 			default: None,
 			profiles: BTreeMap::from([(
@@ -217,8 +219,9 @@ mod tests {
 		assert_eq!(profile.api_key, "key");
 	}
 
+	/// UC-001 | A3: Set Default Profile
 	#[test]
-	fn resolve_profile_default() {
+	fn uc001_resolve_profile_default() {
 		let config = KmConfig {
 			default: Some("myband".to_string()),
 			profiles: BTreeMap::from([(
@@ -234,8 +237,9 @@ mod tests {
 		assert_eq!(name, "myband");
 	}
 
+	/// UC-001 | BR-004: Association Selection
 	#[test]
-	fn resolve_profile_missing() {
+	fn uc001_resolve_profile_missing() {
 		let config = KmConfig {
 			default: None,
 			profiles: BTreeMap::new(),
@@ -245,8 +249,9 @@ mod tests {
 		assert!(err.to_string().contains("No association specified"));
 	}
 
+	/// UC-001 | A4: Default Profile Does Not Exist
 	#[test]
-	fn resolve_profile_not_found() {
+	fn uc001_resolve_profile_not_found() {
 		let config = KmConfig {
 			default: None,
 			profiles: BTreeMap::from([(

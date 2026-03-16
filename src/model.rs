@@ -154,8 +154,9 @@ pub struct RoomDto {
 mod tests {
 	use super::*;
 
+	/// UC-002 | Main Success Scenario
 	#[test]
-	fn filter_input_serializes_camel_case() {
+	fn uc002_filter_input_serializes_camel_case() {
 		let filter = AppointmentFilterInput {
 			date_mode: Some(DateMode::Upcoming),
 			filter_start: Some("2026-01-01T00:00:00Z".to_string()),
@@ -173,15 +174,17 @@ mod tests {
 		assert!(json.contains("\"sortMode\":\"STARTDATE\""));
 	}
 
+	/// UC-002 | Main Success Scenario
 	#[test]
-	fn filter_input_skips_empty_fields() {
+	fn uc002_filter_input_skips_empty_fields() {
 		let filter = AppointmentFilterInput::default();
 		let json = serde_json::to_string(&filter).unwrap();
 		assert_eq!(json, "{}");
 	}
 
+	/// UC-002 | Main Success Scenario
 	#[test]
-	fn appointment_dto_deserializes() {
+	fn uc002_appointment_dto_deserializes() {
 		let json = r##"{
 			"id": 123,
 			"name": "Rehearsal",
@@ -203,8 +206,9 @@ mod tests {
 		assert_eq!(dto.location.as_ref().unwrap().name.as_deref(), Some("Town Hall"));
 	}
 
+	/// UC-003 | Main Success Scenario
 	#[test]
-	fn create_input_serializes_camel_case() {
+	fn uc003_create_input_serializes_camel_case() {
 		let input = CreateAppointmentInput {
 			name: Some("Concert".to_string()),
 			description: None,
