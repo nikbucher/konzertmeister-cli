@@ -251,4 +251,103 @@ mod tests {
 		assert!(result.is_err());
 		assert!(result.unwrap_err().to_string().contains("Invalid datetime format"));
 	}
+
+	fn default_list_args() -> ListArgs {
+		ListArgs {
+			association: None,
+			from: None,
+			to: None,
+			type_ids: vec![],
+			active: false,
+			cancelled: false,
+			published: false,
+			unpublished: false,
+			sort: None,
+			format: OutputFormat::Json,
+			utc: false,
+			page: None,
+			tag: vec![],
+		}
+	}
+
+	/// UC-002 | BR-004: Default Date Mode
+	#[test]
+	fn uc002_build_filter_defaults_to_upcoming() {
+		let filter = build_filter(&default_list_args());
+		let json = serde_json::to_string(&filter).unwrap();
+		assert!(json.contains("\"dateMode\":\"UPCOMING\""));
+		assert!(!json.contains("filterStart"));
+		assert!(!json.contains("filterEnd"));
+	}
+
+	/// UC-002 | A1: Filter by Date Range
+	/// Business Rules: BR-008
+	#[test]
+	fn uc002_build_filter_from_to_switches_to_from_date() {
+		let args = ListArgs {
+			from: Some("2026-01-01".to_string()),
+			to: Some("2026-12-31".to_string()),
+			..default_list_args()
+		};
+		let filter = build_filter(&args);
+		let json = serde_json::to_string(&filter).unwrap();
+		assert!(json.contains("\"dateMode\":\"FROM_DATE\""));
+		assert!(json.contains("\"filterStart\":\"2026-01-01T00:00:00Z\""));
+		assert!(json.contains("\"filterEnd\":\"2026-12-31T23:59:59Z\""));
+	}
+
+	/// UC-002 | A2: Filter by Type, Status, or Tags
+	#[test]
+	fn uc002_build_filter_all_filter_options() {
+		let args = ListArgs {
+			active: true,
+			cancelled: true,
+			published: true,
+			type_ids: vec![3, 7],
+			tag: vec!["Music".to_string(), "Jazz".to_string()],
+			sort: Some(cli::SortMode::Startdate),
+			..default_list_args()
+		};
+		let filter = build_filter(&args);
+		let json = serde_json::to_string(&filter).unwrap();
+		assert!(json.contains("\"activationStatusList\":[\"ACTIVE\",\"CANCELLED\"]"));
+		assert!(json.contains("\"publishedStatus\":\"PUBLISHED\""));
+		assert!(json.contains("\"typeIds\":[3,7]"));
+		assert!(json.contains("\"tags\":[\"Music\",\"Jazz\"]"));
+		assert!(json.contains("\"sortMode\":\"STARTDATE\""));
+	}
+
+	/// UC-002 | A11: Explicit Page Selection
+	/// Business Rules: BR-006
+	#[test]
+	fn uc002_build_filter_explicit_page() {
+		let args = ListArgs { page: Some(3), ..default_list_args() };
+		let filter = build_filter(&args);
+		let json = serde_json::to_string(&filter).unwrap();
+		assert!(json.contains("\"page\":3"));
+	}
+
+	/// UC-002 | BR-005: Output Format Default
+	#[test]
+	fn uc002_output_format_defaults_to_json() {
+		let cli = Cli::parse_from(["km", "list"]);
+		match cli.command {
+			Commands::List(args) => assert_eq!(args.format, OutputFormat::Json),
+			_ => panic!("Expected List command"),
+		}
+	}
+
+	/// UC-003 | A9: Missing Required Flags
+	#[test]
+	fn uc003_missing_template_rejected() {
+		let result = Cli::try_parse_from(["km", "create", "--start", "2026-06-15T19:30:00"]);
+		assert!(result.is_err());
+	}
+
+	/// UC-003 | A9: Missing Required Flags
+	#[test]
+	fn uc003_missing_start_rejected() {
+		let result = Cli::try_parse_from(["km", "create", "--template", "tmpl-1"]);
+		assert!(result.is_err());
+	}
 }

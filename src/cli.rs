@@ -132,7 +132,7 @@ pub enum SortMode {
 	Deadline,
 }
 
-#[derive(ValueEnum, Clone, PartialEq)]
+#[derive(ValueEnum, Clone, Debug, PartialEq)]
 pub enum OutputFormat {
 	Json,
 	Table,

@@ -156,26 +156,6 @@ mod tests {
 
 	/// UC-002 | Main Success Scenario
 	#[test]
-	fn uc002_filter_input_serializes_camel_case() {
-		let filter = AppointmentFilterInput {
-			date_mode: Some(DateMode::Upcoming),
-			filter_start: Some("2026-01-01T00:00:00Z".to_string()),
-			type_ids: vec![1, 2],
-			activation_status_list: vec![ActivationStatus::Active],
-			sort_mode: Some(SortModeApi::Startdate),
-			..Default::default()
-		};
-
-		let json = serde_json::to_string(&filter).unwrap();
-		assert!(json.contains("\"dateMode\":\"UPCOMING\""));
-		assert!(json.contains("\"filterStart\":\"2026-01-01T00:00:00Z\""));
-		assert!(json.contains("\"typeIds\":[1,2]"));
-		assert!(json.contains("\"activationStatusList\":[\"ACTIVE\"]"));
-		assert!(json.contains("\"sortMode\":\"STARTDATE\""));
-	}
-
-	/// UC-002 | Main Success Scenario
-	#[test]
 	fn uc002_filter_input_skips_empty_fields() {
 		let filter = AppointmentFilterInput::default();
 		let json = serde_json::to_string(&filter).unwrap();
@@ -224,4 +204,21 @@ mod tests {
 		assert!(json.contains("\"name\":\"Concert\""));
 		assert!(!json.contains("\"description\""));
 	}
+
+	/// UC-003 | A3: Override Description
+	#[test]
+	fn uc003_create_input_with_description() {
+		let input = CreateAppointmentInput {
+			name: None,
+			description: Some("Annual concert".to_string()),
+			start_zoned: "2026-06-15T19:30:00Z".to_string(),
+			appointment_template_ext_id: "tmpl-1".to_string(),
+			creator_mail: "admin@example.com".to_string(),
+		};
+
+		let json = serde_json::to_string(&input).unwrap();
+		assert!(json.contains("\"description\":\"Annual concert\""));
+		assert!(!json.contains("\"name\""));
+	}
+
 }

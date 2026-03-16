@@ -267,4 +267,47 @@ mod tests {
 		assert!(err.to_string().contains("not found"));
 		assert!(err.to_string().contains("other"));
 	}
+
+	/// UC-001 | A2: Profile Already Exists
+	/// Business Rules: BR-002
+	#[test]
+	fn uc001_profile_overwrite() {
+		let mut config = KmConfig::default();
+		config.profiles.insert(
+			"band".to_string(),
+			Profile { api_key: "old-key".to_string(), creator_mail: None },
+		);
+		config.profiles.insert(
+			"band".to_string(),
+			Profile { api_key: "new-key".to_string(), creator_mail: Some("new@example.com".to_string()) },
+		);
+
+		assert_eq!(config.profiles.len(), 1);
+		assert_eq!(config.profiles["band"].api_key, "new-key");
+		assert_eq!(config.profiles["band"].creator_mail.as_deref(), Some("new@example.com"));
+	}
+
+	/// UC-001 | BR-004: Association Selection
+	#[test]
+	fn uc001_missing_profile_lists_available() {
+		let config = KmConfig {
+			default: None,
+			profiles: BTreeMap::from([
+				("alpha".to_string(), Profile { api_key: "k".to_string(), creator_mail: None }),
+				("beta".to_string(), Profile { api_key: "k".to_string(), creator_mail: None }),
+			]),
+		};
+
+		let err = resolve_profile(&config, None).unwrap_err();
+		let msg = err.to_string();
+		assert!(msg.contains("alpha"));
+		assert!(msg.contains("beta"));
+	}
+
+	/// UC-001 | BR-003: Configuration Directory
+	#[test]
+	fn uc001_config_path_ends_with_config_toml() {
+		let path = config_path().unwrap();
+		assert!(path.ends_with("km/config.toml"));
+	}
 }

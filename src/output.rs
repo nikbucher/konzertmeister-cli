@@ -122,4 +122,18 @@ mod tests {
 		let result = convert_to_local("2026-03-15T17:00:00Z", None);
 		assert!(result.is_none());
 	}
+
+	/// UC-002 | A5: UTC Output
+	#[test]
+	fn uc002_format_datetime_utc_returns_raw() {
+		let result = format_datetime(Some("2026-03-15T17:00:00Z"), Some("Europe/Zurich"), true);
+		assert_eq!(result, "2026-03-15T17:00:00Z");
+	}
+
+	/// UC-002 | A6: No Appointments Found
+	#[test]
+	fn uc002_format_datetime_none_returns_empty() {
+		let result = format_datetime(None, Some("Europe/Zurich"), false);
+		assert_eq!(result, "");
+	}
 }
