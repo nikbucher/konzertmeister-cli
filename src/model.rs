@@ -220,5 +220,4 @@ mod tests {
 		assert!(json.contains("\"description\":\"Annual concert\""));
 		assert!(!json.contains("\"name\""));
 	}
-
 }

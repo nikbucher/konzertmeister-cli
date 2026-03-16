@@ -275,11 +275,17 @@ mod tests {
 		let mut config = KmConfig::default();
 		config.profiles.insert(
 			"band".to_string(),
-			Profile { api_key: "old-key".to_string(), creator_mail: None },
+			Profile {
+				api_key: "old-key".to_string(),
+				creator_mail: None,
+			},
 		);
 		config.profiles.insert(
 			"band".to_string(),
-			Profile { api_key: "new-key".to_string(), creator_mail: Some("new@example.com".to_string()) },
+			Profile {
+				api_key: "new-key".to_string(),
+				creator_mail: Some("new@example.com".to_string()),
+			},
 		);
 
 		assert_eq!(config.profiles.len(), 1);
@@ -293,8 +299,20 @@ mod tests {
 		let config = KmConfig {
 			default: None,
 			profiles: BTreeMap::from([
-				("alpha".to_string(), Profile { api_key: "k".to_string(), creator_mail: None }),
-				("beta".to_string(), Profile { api_key: "k".to_string(), creator_mail: None }),
+				(
+					"alpha".to_string(),
+					Profile {
+						api_key: "k".to_string(),
+						creator_mail: None,
+					},
+				),
+				(
+					"beta".to_string(),
+					Profile {
+						api_key: "k".to_string(),
+						creator_mail: None,
+					},
+				),
 			]),
 		};
 
