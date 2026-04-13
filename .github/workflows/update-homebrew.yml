@@ -1,11 +1,15 @@
 name: Update Homebrew Formula
 
 on:
-  release:
-    types: [ published ]
+  workflow_run:
+    workflows: [ "Release" ]
+    types: [ completed ]
 
 jobs:
   update-formula:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      startsWith(github.event.workflow_run.head_branch, 'v')
     runs-on: ubuntu-latest
 
     steps:
@@ -14,14 +18,15 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
+          TAG="${{ github.event.workflow_run.head_branch }}"
+          VERSION="${TAG#v}"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-          DOWNLOAD_BASE="https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}"
+          DOWNLOAD_BASE="https://github.com/${{ github.repository }}/releases/download/${TAG}"
 
           for target in aarch64-apple-darwin x86_64-apple-darwin aarch64-unknown-linux-gnu x86_64-unknown-linux-gnu; do
             URL="$DOWNLOAD_BASE/km-${target}.tar.gz"
-            SHA=$(gh release download "${{ github.ref_name }}" --repo "${{ github.repository }}" --pattern "km-${target}.tar.gz" --output - | sha256sum | cut -d' ' -f1)
+            SHA=$(gh release download "$TAG" --repo "${{ github.repository }}" --pattern "km-${target}.tar.gz" --output - | sha256sum | cut -d' ' -f1)
             KEY=$(echo "$target" | tr '-' '_')
             echo "url_${KEY}=$URL" >> "$GITHUB_OUTPUT"
             echo "sha_${KEY}=$SHA" >> "$GITHUB_OUTPUT"
