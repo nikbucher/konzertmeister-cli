@@ -4,3 +4,5 @@
 # These are explicitly windows files and should use crlf
 *.bat           text eol=crlf
 
+# Markdown uses two trailing spaces for intentional hard line breaks.
+*.md            whitespace=-blank-at-eol
