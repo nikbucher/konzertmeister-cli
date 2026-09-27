@@ -3,8 +3,11 @@
 !.gitattributes
 !.gitignore
 !.github
-!.claude/
 !.commitlintrc.yml
+
+!.agents/
+.agents/*
+!.agents/AGENTS.md
 
 /config/
 build/
