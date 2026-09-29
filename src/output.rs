@@ -1,8 +1,9 @@
 use anyhow::Context;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Local, Utc};
+use clap::ValueEnum;
 use comfy_table::{Table, presets::UTF8_FULL_CONDENSED};
 
-use crate::model::{AppointmentDto, MemberDto};
+use crate::model::{AppointmentDto, MemberDto, ReplyDto};
 use serde::Serialize;
 
 pub fn print_json(appointments: &[AppointmentDto], utc: bool) -> anyhow::Result<()> {
@@ -62,8 +63,40 @@ pub fn print_members_table(items: &[MemberDto]) -> anyhow::Result<()> {
 	Ok(())
 }
 
+pub fn print_replies_table(items: &[ReplyDto]) -> anyhow::Result<()> {
+	let mut table = Table::new();
+	table.load_preset(UTF8_FULL_CONDENSED);
+	table.set_header(vec!["Name", "Mail", "Reply", "Comment", "Replied At"]);
+	for item in items {
+		let reply = item
+			.reply
+			.as_ref()
+			.map(|value| value.to_possible_value().map(|possible| possible.get_name().to_ascii_uppercase()).unwrap_or_else(|| "UNKNOWN".into()))
+			.unwrap_or_default();
+		table.add_row(vec![
+			full_name(item.km_user_first_name.as_deref(), item.km_user_last_name.as_deref()),
+			item.km_user_email.clone().unwrap_or_default(),
+			reply,
+			item.reply_comment.clone().unwrap_or_default(),
+			format_reply_datetime(item.replied_at.as_deref()),
+		]);
+	}
+	println!("{table}");
+	Ok(())
+}
+
 fn full_name(first: Option<&str>, last: Option<&str>) -> String {
 	format!("{} {}", first.unwrap_or(""), last.unwrap_or("")).trim().to_string()
+}
+
+fn format_reply_datetime(value: Option<&str>) -> String {
+	value
+		.map(|raw| {
+			DateTime::parse_from_rfc3339(raw)
+				.map(|datetime| datetime.with_timezone(&Local).format("%a %Y-%m-%d %H:%M %Z").to_string())
+				.unwrap_or_else(|_| raw.to_string())
+		})
+		.unwrap_or_default()
 }
 
 fn format_datetime(dt_str: Option<&str>, timezone_id: Option<&str>, utc: bool) -> String {

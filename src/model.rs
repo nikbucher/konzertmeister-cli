@@ -257,6 +257,31 @@ pub struct SelectOptionDto {
 	pub name: Option<String>,
 }
 
+#[derive(clap::ValueEnum, Deserialize, Serialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum Reply {
+	Positive,
+	Maybe,
+	Negative,
+	Unanswered,
+	#[serde(other)]
+	#[value(skip)]
+	Unknown,
+}
+
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReplyDto {
+	pub km_user_id: Option<i64>,
+	pub km_user_first_name: Option<String>,
+	pub km_user_last_name: Option<String>,
+	pub km_user_email: Option<String>,
+	pub external_invite: Option<bool>,
+	pub reply: Option<Reply>,
+	pub reply_comment: Option<String>,
+	pub replied_at: Option<String>,
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -357,5 +382,19 @@ mod tests {
 		let value = serde_json::to_value(input).unwrap();
 		assert_eq!(value["properties"][0]["valueBoolean"], false);
 		assert!(value.get("firstname").is_none());
+	}
+
+	/// UC-008 | Main Success Scenario
+	#[test]
+	fn uc008_reply_dto_deserializes() {
+		let reply: ReplyDto = serde_json::from_str(r#"{"kmUserFirstName":"Alex","reply":"MAYBE","repliedAt":"2026-01-01T12:00:00Z"}"#).unwrap();
+		assert_eq!(reply.reply, Some(Reply::Maybe));
+	}
+
+	/// UC-008 | BR-001: Unrecognized reply values remain visible
+	#[test]
+	fn uc008_unknown_reply_deserializes() {
+		let reply: ReplyDto = serde_json::from_str(r#"{"reply":"LATER"}"#).unwrap();
+		assert_eq!(reply.reply, Some(Reply::Unknown));
 	}
 }

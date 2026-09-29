@@ -1,3 +1,4 @@
+use crate::model::Reply;
 use clap::{Parser, Subcommand, ValueEnum};
 
 #[derive(Parser)]
@@ -23,6 +24,11 @@ pub enum Commands {
 	Member {
 		#[command(subcommand)]
 		action: MemberAction,
+	},
+	/// View appointment replies
+	Reply {
+		#[command(subcommand)]
+		action: ReplyAction,
 	},
 }
 
@@ -162,6 +168,12 @@ pub enum MemberAction {
 	Update(MemberWriteArgs),
 }
 
+#[derive(Subcommand)]
+pub enum ReplyAction {
+	/// List replies to an appointment
+	List(ReplyListArgs),
+}
+
 #[derive(clap::Args)]
 pub struct MemberListArgs {
 	/// Association profile to use (overrides default)
@@ -215,4 +227,20 @@ fn parse_property(value: &str) -> Result<(String, String), String> {
 		return Err("Property external ID must not be empty".into());
 	}
 	Ok((key.to_string(), val.to_string()))
+}
+
+#[derive(clap::Args)]
+pub struct ReplyListArgs {
+	/// Appointment ID from appointment list
+	#[arg(value_name = "APPOINTMENT_ID")]
+	pub app_id: i64,
+	/// Association profile to use (overrides default)
+	#[arg(long)]
+	pub association: Option<String>,
+	/// Show only replies with this value
+	#[arg(long, value_enum)]
+	pub reply: Option<Reply>,
+	/// Output format
+	#[arg(long, value_enum, default_value = "json")]
+	pub format: OutputFormat,
 }

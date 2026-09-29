@@ -7,8 +7,11 @@ mod output;
 use anyhow::Context;
 use clap::Parser;
 
-use cli::{AppointmentAction, Cli, Commands, ConfigAction, CreateArgs, ListArgs, MemberAction, MemberListArgs, MemberWriteArgs, OutputFormat};
-use model::{ALL_TYPE_IDS, ActivationStatus, AppointmentFilterInput, CreateAppointmentInput, DateMode, MemberDto, MemberInput, MemberPropertyInput, MemberPropertyValue, PublishedStatus, SortModeApi};
+use cli::{AppointmentAction, Cli, Commands, ConfigAction, CreateArgs, ListArgs, MemberAction, MemberListArgs, MemberWriteArgs, OutputFormat, ReplyAction, ReplyListArgs};
+use model::{
+	ALL_TYPE_IDS, ActivationStatus, AppointmentFilterInput, CreateAppointmentInput, DateMode, MemberDto, MemberInput, MemberPropertyInput, MemberPropertyValue, PublishedStatus, Reply, ReplyDto,
+	SortModeApi,
+};
 
 fn main() {
 	env_logger::Builder::from_default_env().format_timestamp_millis().init();
@@ -31,6 +34,9 @@ fn run() -> anyhow::Result<()> {
 			MemberAction::List(args) => handle_member_list(args),
 			MemberAction::Add(args) => handle_member_write(args, false),
 			MemberAction::Update(args) => handle_member_write(args, true),
+		},
+		Commands::Reply { action } => match action {
+			ReplyAction::List(args) => handle_reply_list(args),
 		},
 	}
 }
@@ -103,6 +109,13 @@ fn filter_members(mut members: Vec<MemberDto>, mail: Option<&str>) -> Vec<Member
 	members
 }
 
+fn filter_replies(mut replies: Vec<ReplyDto>, reply: Option<&Reply>) -> Vec<ReplyDto> {
+	if let Some(reply) = reply {
+		replies.retain(|item| item.reply.as_ref() == Some(reply));
+	}
+	replies
+}
+
 fn handle_member_list(args: MemberListArgs) -> anyhow::Result<()> {
 	let key = profile_key(args.association.as_deref())?;
 	let members = filter_members(api::list_members(&key)?, args.mail.as_deref());
@@ -167,6 +180,15 @@ fn handle_member_write(args: MemberWriteArgs, update: bool) -> anyhow::Result<()
 	}
 	eprintln!("Member {}: {}", if update { "updated" } else { "added" }, input.mail);
 	Ok(())
+}
+
+fn handle_reply_list(args: ReplyListArgs) -> anyhow::Result<()> {
+	let key = profile_key(args.association.as_deref())?;
+	let replies = filter_replies(api::list_replies(&key, args.app_id)?, args.reply.as_ref());
+	match args.format {
+		OutputFormat::Json => output::print_generic_json(&replies),
+		OutputFormat::Table => output::print_replies_table(&replies),
+	}
 }
 
 /// Resolve a start datetime to a zoned ISO 8601 string (UC-003 BR-001).
@@ -552,5 +574,19 @@ mod tests {
 		};
 		let input = build_member_input(args).unwrap();
 		assert!(validate_update_input(&input).is_err());
+	}
+
+	/// UC-008 | A1: Filter by Reply
+	#[test]
+	fn uc008_reply_filter() {
+		let cli = Cli::parse_from(["km", "reply", "list", "123", "--reply", "maybe"]);
+		let Commands::Reply { action: ReplyAction::List(args) } = cli.command else {
+			panic!("Expected reply list")
+		};
+		assert_eq!(args.app_id, 123);
+		let replies: Vec<ReplyDto> = serde_json::from_str(r#"[{"reply":"MAYBE"},{"reply":"POSITIVE"}]"#).unwrap();
+		let matched = filter_replies(replies, args.reply.as_ref());
+		assert_eq!(matched.len(), 1);
+		assert!(filter_replies(matched, Some(&Reply::Negative)).is_empty());
 	}
 }
