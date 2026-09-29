@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/nikbucher/konzertmeister-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/nikbucher/konzertmeister-cli/actions/workflows/ci.yml)
 
-A command-line tool for the [Konzertmeister](https://konzertmeister.app) API. List and create appointments for your music association.
+A command-line tool for the [Konzertmeister](https://konzertmeister.app) API. Manage appointments and members, and view replies and attendance for your music association.
 
 ## Prerequisites
 
@@ -61,7 +61,7 @@ km config set other-association
 km config default my-association
 ```
 
-The config file is stored at `~/.config/km/config.toml` (Linux/macOS) with restricted file permissions (600).
+The config file is stored at `~/.config/km/config.toml` on Linux (or under `$XDG_CONFIG_HOME`), and at `~/Library/Application Support/km/config.toml` on macOS. Run `km config path` to see the exact location. On Unix, the file has restricted permissions (600).
 
 ## Usage
 
@@ -69,34 +69,34 @@ The config file is stored at `~/.config/km/config.toml` (Linux/macOS) with restr
 
 ```sh
 # Upcoming appointments (default output: JSON)
-km list
+km appointment list
 
 # Filter by date range
-km list --from 2026-01-01 --to 2026-06-30
+km appointment list --from 2026-01-01 --to 2026-06-30
 
 # Only active, published appointments
-km list --active --published
+km appointment list --active --published
 
 # Filter by tag
-km list --tag rehearsal
+km appointment list --tag rehearsal
 
 # Filter by appointment type ID
-km list --type 1 --type 5
+km appointment list --type 1 --type 5
 
 # Sort by deadline instead of start date
-km list --sort deadline
+km appointment list --sort deadline
 
 # Table output
-km list --format table
+km appointment list --format table
 
 # Show times in UTC
-km list --format table --utc
+km appointment list --format table --utc
 ```
 
 JSON output is designed to be pipeable, e.g. with [jq](https://jqlang.github.io/jq/):
 
 ```sh
-km list | jq '.[].name'
+km appointment list | jq '.[].name'
 ```
 
 ### Create an appointment
@@ -105,20 +105,68 @@ Appointments are created from templates. You can find template external IDs in t
 
 ```sh
 # Create from a template
-km create --template tmpl-abc --start 2026-06-15T19:30
+km appointment create --template tmpl-abc --start 2026-06-15T19:30
 
 # With a custom name and description
-km create --template tmpl-abc --start 2026-06-15T19:30 --name "Summer Concert" --description "Annual open-air event"
+km appointment create --template tmpl-abc --start 2026-06-15T19:30 --name "Summer Concert" --description "Annual open-air event"
 
 # Preview the request without sending it
-km create --template tmpl-abc --start 2026-06-15T19:30 --dry-run
+km appointment create --template tmpl-abc --start 2026-06-15T19:30 --dry-run
 ```
 
 Naive datetimes (without timezone offset) are interpreted as your local timezone. You can also provide an explicit offset:
 
 ```sh
-km create --template tmpl-abc --start "2026-06-15T19:30:00+02:00"
+km appointment create --template tmpl-abc --start "2026-06-15T19:30:00+02:00"
 ```
+
+### List members
+
+```sh
+km member list --format table
+km member list --mail person@example.com
+```
+
+The default JSON output includes member data fields. Email matching ignores case. An empty result is a successful empty list.
+
+### Add or update a member
+
+```sh
+km member add --mail person@example.com --firstname Alex --prop-string section=brass
+km member update --mail person@example.com --mobile-phone 123 --prop-bool active=true
+km member add --mail person@example.com --prop-number score=1.5 --dry-run
+```
+
+`--mail` is required. Updates also need at least one changed detail or data field. Member data fields use their external IDs: `--prop-string EXT=VALUE`, `--prop-number EXT=VALUE`, `--prop-date EXT=VALUE`, and `--prop-bool EXT=true|false`. Repeat a flag to set multiple fields. Date values accept a local datetime or an explicit offset. The API input has no dedicated select value field. `--dry-run` prints the request JSON without sending it. Successful live requests report to stderr and exit with code 0; the API returns no body.
+
+### List replies
+
+```sh
+km reply list 123
+km reply list 123 --reply positive --format table
+```
+
+Use an appointment ID from `km appointment list`. Reply filters are `positive`, `maybe`, `negative`, and `unanswered`. The default output is JSON.
+
+### List attendance
+
+```sh
+km attendance list 123
+km attendance list 123 --attending --format table
+km attendance list 123 --absent
+```
+
+`--attending` and `--absent` are mutually exclusive. Recorded attendance uses the API's v2 endpoint. The default output is JSON.
+
+### Exit codes
+
+All commands use these exit codes:
+
+| Code | Meaning |
+|------|---------|
+| `0` | Command succeeded or help was displayed |
+| `1` | Runtime error, such as a missing association profile or API failure |
+| `2` | Argument error, such as an unknown option or missing required argument |
 
 ### Manage configuration
 
@@ -132,8 +180,8 @@ km config edit      # Open config in $EDITOR
 Override the default profile for any command with `--association`:
 
 ```sh
-km list --association other-association
-km create --association other-association --template tmpl-abc --start 2026-06-15T19:30
+km appointment list --association other-association
+km appointment create --association other-association --template tmpl-abc --start 2026-06-15T19:30
 ```
 
 ## Releasing
@@ -141,8 +189,8 @@ km create --association other-association --template tmpl-abc --start 2026-06-15
 Releases are automated via GitHub Actions. To create a new release:
 
 ```sh
-git tag -a v0.1.0 -m "Initial release"
-git push origin v0.1.0
+git tag -a v0.2.0 -m "v0.2.0"
+git push origin v0.2.0
 ```
 
 This triggers a build for all supported platforms and creates a GitHub Release with the binaries attached.
@@ -151,7 +199,8 @@ This triggers a build for all supported platforms and creates a GitHub Release w
 
 - [Vision](docs/vision.md) — project goals and scope
 - [Requirements](docs/requirements.md) — functional and non-functional requirements
-- [API spec](docs/openapi.json) — OpenAPI 3.0 (source: `https://rest.konzertmeister.app/v3/api-docs/m2m`)
+- [Use cases](docs/use_cases/use_cases.md) — feature overview, specifications, and test traceability
+- [API spec](docs/openapi.json) — OpenAPI 3.1 (source: `https://rest.konzertmeister.app/v3/api-docs/m2m`)
 
 ## Contributing
 

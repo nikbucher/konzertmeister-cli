@@ -11,6 +11,10 @@ Use Konzertmeister's own naming (see [Konzertmeister API documentation](https://
 | **Association** | organization, club, Verein | The entity that owns appointments                   |
 | **Appointment** | event, Termin              | A scheduled entry                                   |
 | **Template**    | —                          | Appointment templates, referenced by external ID    |
+| **Member**      | —                          | A person associated with an association             |
+| **Data field**  | Property                   | Member field addressed by external ID                |
+| **Reply**       | —                          | A member response to an appointment                  |
+| **Attendance**  | —                          | Recorded actual presence at an appointment           |
 | **API key**     | —                          | Per association, sent via `X-KM-ORG-API-KEY` header |
 
 ## Development Methodology
@@ -45,7 +49,7 @@ Examples:
 Each test is linked to its use case via a naming convention and a doc comment:
 
 ```rust
-/// UC-002 | BR-008: Date Input Normalization
+/// UC-002 | BR-005: Date Input Normalization
 #[test]
 fn uc002_normalize_plain_date_from() { ... }
 ```

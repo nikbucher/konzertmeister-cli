@@ -2,28 +2,25 @@
 
 ## Goal
 
-A command-line tool that makes the Konzertmeister API accessible, allowing users to efficiently list and verify appointments as well as automate their creation.
+Make the documented [Konzertmeister M2M API](https://rest.konzertmeister.app/v3/api-docs/m2m) usable through a command-line interface. Anyone with an association API key should be able to use the API's capabilities directly in the terminal and automate them with scripts or agents.
 
 ## Users
 
-- **Association Admin**: Uses the CLI to list and quickly verify appointment data, and to automate appointment creation (manually, via scripts, or in the future via an agent).
-- **Open-Source Community**: Any Konzertmeister user with an API key who wants to use the API from the command line.
+- **Association Admin:** Manages appointments and members of an association, interactively or through scripts and agents.
 
-## Core Features
+## Product Priorities
 
-- **List appointments**: Query upcoming appointments with filters (date, type, status, tags) and output as JSON
-- **Create appointment**: Create individual appointments from templates via the API
-- **Batch creation**: Create multiple appointments at once
-- **API key configuration**: Simple configuration of the API key per association
+- **API coverage:** Expose every documented M2M operation, including appointments, members, replies, and attendance, through CLI commands.
+- **Clear, consistent commands:** Use Konzertmeister's domain terms and provide clear commands, input validation, and errors.
+- **Automation:** Provide machine-readable JSON output and predictable exit codes so commands work well with other tools.
+- **Association context:** Make it straightforward to configure and switch between associations without API keys appearing in output, logs, or error messages.
 
-## Key Workflows
-
-1. Configure API key and connect to the Konzertmeister API
-2. List, filter, and verify appointment data
-3. Create appointments individually or in batch from templates
+The API defines the core scope. CLI conveniences such as batch creation can be added where they make common workflows easier.
 
 ## Success Criteria
 
-- All available API endpoints are usable via the CLI
-- Output is available as JSON and pipeable for further processing
-- The CLI is available as an open-source project on GitHub
+- Every documented M2M operation is accessible through the CLI.
+- List commands offer JSON output by default and readable tables for interactive use.
+- Action commands provide understandable feedback about their result.
+- Every command returns documented exit codes.
+- The project is available as open source on GitHub.

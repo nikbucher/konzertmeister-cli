@@ -11,11 +11,11 @@
 ## Preconditions
 
 - At least one association profile is configured (see UC-001)
-- A default association is set or `--association` is provided (see BR-003 in UC-001)
+- A default association is set or `--association` is provided (see UC-001 BR-004)
 
 ## Main Success Scenario
 
-1. Admin runs `km list`.
+1. Admin runs `km appointment list`.
 2. System resolves the association profile (default or via `--association`).
 3. System sends a request to the Konzertmeister API with `dateMode: UPCOMING`.
 4. System receives the list of upcoming appointments.
@@ -29,7 +29,7 @@
 **Trigger:** Admin provides `--from` and/or `--to` flags (step 1)
 **Flow:**
 
-1. System normalizes the date inputs (see BR-008).
+1. System normalizes the date inputs (see BR-005).
 2. System switches to `dateMode: FROM_DATE`.
 3. System sends the request with `filterStart` and/or `filterEnd`.
 4. Use case continues at step 4.
@@ -57,6 +57,7 @@
 
 1. System formats the appointments as a table with columns: id, name, start, end, location, remind_deadline, status_deadline, active, tags.
 2. System outputs the table to stdout.
+3. Use case ends.
 
 ### A5: UTC Output
 
@@ -65,6 +66,7 @@
 
 1. System skips timezone conversion (step 5).
 2. System outputs datetimes in raw ISO 8601 UTC format.
+3. Use case ends.
 
 ### A6: No Appointments Found
 
@@ -81,6 +83,7 @@
 
 1. System displays an error message including the HTTP status code and API error message (NFR-005).
 2. System exits with a non-zero exit code (NFR-004).
+3. Use case ends.
 
 ### A8: Association Not Found
 
@@ -90,6 +93,7 @@
 1. System displays an error: "Profile '<name>' not found."
 2. System lists available profiles.
 3. System exits with a non-zero exit code.
+4. Use case ends.
 
 ### A9: No Association Configured
 
@@ -99,6 +103,7 @@
 1. System displays an error: "No association specified. Use --association or set a default with 'km config default'."
 2. System lists available profiles (if any).
 3. System exits with a non-zero exit code.
+4. Use case ends.
 
 ### A10: Multiple Pages of Results
 
@@ -134,23 +139,23 @@
 
 ## Business Rules
 
-### BR-004: Default Date Mode
+### BR-001: Default Date Mode
 
 When no `--from` or `--to` is provided, the CLI uses `dateMode: UPCOMING` (from today onwards).
 
-### BR-005: Output Format Default
+### BR-002: Output Format Default
 
 JSON is the default output format. Table output requires `--format table`.
 
-### BR-006: Auto-Pagination
+### BR-003: Auto-Pagination
 
 By default, the CLI fetches all pages and merges them. When `--page` is provided, only that single page is returned.
 
-### BR-007: Timezone Display Default
+### BR-004: Timezone Display Default
 
 Datetimes are displayed in each appointment's local timezone by default. The `--utc` flag overrides this to show raw UTC.
 
-### BR-008: Date Input Normalization
+### BR-005: Date Input Normalization
 
 `--from` and `--to` accept three formats:
 

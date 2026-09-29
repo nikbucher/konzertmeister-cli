@@ -12,7 +12,7 @@
 
 - The CLI (`km`) is installed
 - The admin has an API key for the association (obtained from the Konzertmeister web UI)
-- The admin knows the creator email (a Konzertmeister account with permission to create appointments in the association)
+- The admin knows the creator email if the profile will be used to create appointments.
 
 ## Main Success Scenario
 
@@ -21,7 +21,7 @@
 3. Admin enters the API key.
 4. System prompts for the creator email.
 5. Admin enters the creator email.
-6. System stores the profile (name, API key, and creator email) in the configuration file (`<config-dir>/km/config.toml`).
+6. System stores the profile (name, API key, and optional creator email) in the configuration file (`<config-dir>/km/config.toml`).
 7. System confirms that the profile has been saved.
 
 ## Alternative Flows
@@ -41,21 +41,23 @@
 **Flow:**
 
 1. System overwrites the existing profile values.
-2. System confirms that the profile has been updated.
+2. System confirms that the profile has been saved.
+3. Use case ends.
 
 ### A3: Set Default Profile
 
-**Trigger:** Admin wants to set a default association
+**Trigger:** Admin chooses to set a default association (step 1)
 **Flow:**
 
 1. Admin runs `km config default <profile-name>`.
 2. System verifies that the profile exists.
 3. System stores the profile name as the default in the configuration file.
 4. System confirms that the default has been set.
+5. Use case ends.
 
 ### A4: Default Profile Does Not Exist
 
-**Trigger:** Profile name does not exist (A3, step 2)
+**Trigger:** The requested default profile does not exist (step 1; A3 step 2)
 **Flow:**
 
 1. System displays an error: "Profile '<name>' not found."
@@ -74,8 +76,9 @@
 **Trigger:** Admin provides an empty creator email (step 5)
 **Flow:**
 
-1. System displays an error: "Creator email must not be empty."
-2. Use case ends.
+1. System warns that appointment creation will not be possible with this profile.
+2. System stores the profile without a creator email.
+3. Use case continues at step 7.
 
 ### A7: Config Directory Does Not Exist
 
@@ -87,12 +90,12 @@
 
 ### A8: Edit Configuration in Editor
 
-**Trigger:** Admin wants to edit the configuration file directly
+**Trigger:** Admin chooses to edit the configuration file directly (step 1)
 **Flow:**
 
 1. Admin runs `km config edit`.
 2. If the configuration file does not exist, system creates a template file.
-3. System opens the configuration file in the default editor (`$EDITOR`, falling back to `vim` or `nano`).
+3. System opens the configuration file in `$EDITOR`, `$VISUAL`, or `vim`.
 4. Admin edits and saves the file.
 5. Use case ends.
 
@@ -101,7 +104,7 @@
 ### Success Postconditions
 
 - The association profile is stored in `<config-dir>/km/config.toml`
-- The API key and creator email are persisted and available for subsequent commands
+- The API key and any supplied creator email are persisted and available for subsequent commands
 - If a default was set, subsequent commands without `--association` use this profile
 
 ### Failure Postconditions

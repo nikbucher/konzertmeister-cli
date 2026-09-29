@@ -1,0 +1,28 @@
+@startuml Use Cases Overview
+left to right direction
+
+actor "Association Admin" as admin
+
+rectangle "km — Konzertmeister CLI" {
+    usecase "Configure Association Profile\nUC-001" as UC001
+    usecase "List Appointments\nUC-002" as UC002
+    usecase "Create Appointment\nUC-003" as UC003
+    usecase "Batch Create Appointments\nUC-004" as UC004
+    usecase "List Members\nUC-005" as UC005
+    usecase "Add Member\nUC-006" as UC006
+    usecase "Update Member\nUC-007" as UC007
+    usecase "List Replies\nUC-008" as UC008
+    usecase "List Attendances\nUC-009" as UC009
+}
+
+admin --> UC001
+admin --> UC002
+admin --> UC003
+admin --> UC004
+admin --> UC005
+admin --> UC006
+admin --> UC007
+admin --> UC008
+admin --> UC009
+
+@enduml
