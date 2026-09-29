@@ -7,8 +7,8 @@ mod output;
 use anyhow::Context;
 use clap::Parser;
 
-use cli::{AppointmentAction, Cli, Commands, ConfigAction, CreateArgs, ListArgs, OutputFormat};
-use model::{ALL_TYPE_IDS, ActivationStatus, AppointmentFilterInput, CreateAppointmentInput, DateMode, PublishedStatus, SortModeApi};
+use cli::{AppointmentAction, Cli, Commands, ConfigAction, CreateArgs, ListArgs, MemberAction, MemberListArgs, MemberWriteArgs, OutputFormat};
+use model::{ALL_TYPE_IDS, ActivationStatus, AppointmentFilterInput, CreateAppointmentInput, DateMode, MemberDto, MemberInput, MemberPropertyInput, MemberPropertyValue, PublishedStatus, SortModeApi};
 
 fn main() {
 	env_logger::Builder::from_default_env().format_timestamp_millis().init();
@@ -26,6 +26,11 @@ fn run() -> anyhow::Result<()> {
 		Commands::Appointment { action } => match action {
 			AppointmentAction::List(args) => handle_list(args),
 			AppointmentAction::Create(args) => handle_create(args),
+		},
+		Commands::Member { action } => match action {
+			MemberAction::List(args) => handle_member_list(args),
+			MemberAction::Add(args) => handle_member_write(args, false),
+			MemberAction::Update(args) => handle_member_write(args, true),
 		},
 	}
 }
@@ -85,6 +90,83 @@ fn selected_profile(association: Option<&str>) -> anyhow::Result<(String, config
 	let cfg = config::load_config().context("Failed to load configuration")?;
 	let (name, profile) = config::resolve_profile(&cfg, association)?;
 	Ok((name.to_string(), profile.clone()))
+}
+
+fn profile_key(association: Option<&str>) -> anyhow::Result<String> {
+	Ok(selected_profile(association)?.1.api_key)
+}
+
+fn filter_members(mut members: Vec<MemberDto>, mail: Option<&str>) -> Vec<MemberDto> {
+	if let Some(mail) = mail {
+		members.retain(|member| member.mail.as_deref().is_some_and(|value| value.eq_ignore_ascii_case(mail)));
+	}
+	members
+}
+
+fn handle_member_list(args: MemberListArgs) -> anyhow::Result<()> {
+	let key = profile_key(args.association.as_deref())?;
+	let members = filter_members(api::list_members(&key)?, args.mail.as_deref());
+	match args.format {
+		OutputFormat::Json => output::print_generic_json(&members),
+		OutputFormat::Table => output::print_members_table(&members),
+	}
+}
+
+fn build_member_input(args: MemberWriteArgs) -> anyhow::Result<MemberInput> {
+	let mut properties = Vec::new();
+	for (ext, value) in args.prop_string {
+		properties.push(MemberPropertyInput::new(ext, MemberPropertyValue::String(value)));
+	}
+	for (ext, value) in args.prop_number {
+		let number: f64 = value.parse().with_context(|| format!("Invalid number for property '{ext}': '{value}'"))?;
+		if !number.is_finite() {
+			anyhow::bail!("Property '{ext}' requires a finite number");
+		}
+		properties.push(MemberPropertyInput::new(ext, MemberPropertyValue::Number(number)));
+	}
+	for (ext, value) in args.prop_date {
+		let date = resolve_start_zoned(&value)?;
+		properties.push(MemberPropertyInput::new(ext, MemberPropertyValue::Date(date)));
+	}
+	for (ext, value) in args.prop_bool {
+		let boolean: bool = value.parse().with_context(|| format!("Invalid boolean for property '{ext}': '{value}' (expected true or false)"))?;
+		properties.push(MemberPropertyInput::new(ext, MemberPropertyValue::Boolean(boolean)));
+	}
+	Ok(MemberInput {
+		mail: args.mail,
+		firstname: args.firstname,
+		lastname: args.lastname,
+		mobile_phone: args.mobile_phone,
+		properties,
+	})
+}
+
+fn validate_update_input(input: &MemberInput) -> anyhow::Result<()> {
+	if input.firstname.is_none() && input.lastname.is_none() && input.mobile_phone.is_none() && input.properties.is_empty() {
+		anyhow::bail!("nothing to update: provide a name, mobile phone, or data field");
+	}
+	Ok(())
+}
+
+fn handle_member_write(args: MemberWriteArgs, update: bool) -> anyhow::Result<()> {
+	let dry_run = args.dry_run;
+	let association = args.association.clone();
+	let input = build_member_input(args)?;
+	if update {
+		validate_update_input(&input)?;
+	}
+	if dry_run {
+		println!("{}", serde_json::to_string_pretty(&input).context("Failed to serialize request")?);
+		return Ok(());
+	}
+	let key = profile_key(association.as_deref())?;
+	if update {
+		api::update_member(&key, &input)?;
+	} else {
+		api::add_member(&key, &input)?;
+	}
+	eprintln!("Member {}: {}", if update { "updated" } else { "added" }, input.mail);
+	Ok(())
 }
 
 /// Resolve a start datetime to a zoned ISO 8601 string (UC-003 BR-001).
@@ -383,5 +465,92 @@ mod tests {
 			Cli::parse_from(["km", "appointment", "list"]).command,
 			Commands::Appointment { action: AppointmentAction::List(_) }
 		));
+	}
+
+	/// UC-005 | Main Success Scenario
+	#[test]
+	fn uc005_member_list_command_parses() {
+		assert!(matches!(Cli::parse_from(["km", "member", "list"]).command, Commands::Member { action: MemberAction::List(_) }));
+	}
+
+	/// UC-005 | A1: Filter by Email
+	#[test]
+	fn uc005_mail_filter_ignores_case_and_can_return_empty() {
+		let members: Vec<MemberDto> = serde_json::from_str(r#"[{"mail":"Alex@Example.com"},{"mail":"other@example.com"}]"#).unwrap();
+		let matched = filter_members(members, Some("alex@example.com"));
+		assert_eq!(matched.len(), 1);
+		assert_eq!(filter_members(matched, Some("missing@example.com")).len(), 0);
+	}
+
+	/// UC-006 | Main Success Scenario
+	#[test]
+	fn uc006_member_add_command_parses() {
+		assert!(matches!(
+			Cli::parse_from(["km", "member", "add", "--mail", "a@example.com"]).command,
+			Commands::Member { action: MemberAction::Add(_) }
+		));
+	}
+
+	/// UC-006 | A2: Invalid Data Field
+	#[test]
+	fn uc006_invalid_properties_are_rejected() {
+		for value in ["x=abc", "x=NaN"] {
+			let cli = Cli::parse_from(["km", "member", "add", "--mail", "a@example.com", "--prop-number", value]);
+			let Commands::Member { action: MemberAction::Add(args) } = cli.command else {
+				panic!("Expected member add")
+			};
+			assert!(build_member_input(args).is_err());
+		}
+		let cli = Cli::parse_from(["km", "member", "add", "--mail", "a@example.com", "--prop-bool", "x=maybe"]);
+		let Commands::Member { action: MemberAction::Add(args) } = cli.command else {
+			panic!("Expected member add")
+		};
+		assert!(build_member_input(args).is_err());
+		assert!(Cli::try_parse_from(["km", "member", "add", "--mail", "a@example.com", "--prop-string", "missing-equals"]).is_err());
+	}
+
+	/// UC-006 | Typed property parser
+	#[test]
+	fn uc006_member_property_parser() {
+		let cli = Cli::parse_from(["km", "member", "add", "--mail", "a@example.com", "--prop-string", "section=brass", "--prop-bool", "active=false"]);
+		let Commands::Member { action: MemberAction::Add(args) } = cli.command else {
+			panic!("Expected member add");
+		};
+		let input = build_member_input(args).unwrap();
+		assert_eq!(input.properties.len(), 2);
+		assert_eq!(input.properties[0].property_ext_id, "section");
+		assert_eq!(input.properties[1].value_boolean, Some(false));
+	}
+	/// UC-006 / UC-007 | Typed data fields and update command
+	#[test]
+	fn uc007_member_update_typed_properties() {
+		let cli = Cli::parse_from([
+			"km",
+			"member",
+			"update",
+			"--mail",
+			"a@example.com",
+			"--prop-number",
+			"score=1.5",
+			"--prop-date",
+			"joined=2026-06-15T19:30:00+02:00",
+		]);
+		let Commands::Member { action: MemberAction::Update(args) } = cli.command else {
+			panic!("Expected member update");
+		};
+		let input = build_member_input(args).unwrap();
+		assert_eq!(input.properties[0].value_number, Some(1.5));
+		assert_eq!(input.properties[1].value_date.as_deref(), Some("2026-06-15T19:30:00+02:00"));
+	}
+
+	/// UC-007 | A2: No Change Provided
+	#[test]
+	fn uc007_update_requires_a_change() {
+		let cli = Cli::parse_from(["km", "member", "update", "--mail", "a@example.com"]);
+		let Commands::Member { action: MemberAction::Update(args) } = cli.command else {
+			panic!("Expected member update")
+		};
+		let input = build_member_input(args).unwrap();
+		assert!(validate_update_input(&input).is_err());
 	}
 }

@@ -66,6 +66,60 @@ pub enum DateMode {
 	FromDate,
 }
 
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MemberPropertyInput {
+	pub property_ext_id: String,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub value_string: Option<String>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub value_number: Option<f64>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub value_date: Option<String>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub value_boolean: Option<bool>,
+}
+
+pub enum MemberPropertyValue {
+	String(String),
+	Number(f64),
+	Date(String),
+	Boolean(bool),
+}
+
+impl MemberPropertyInput {
+	pub fn new(property_ext_id: String, value: MemberPropertyValue) -> Self {
+		let mut input = Self {
+			property_ext_id,
+			value_string: None,
+			value_number: None,
+			value_date: None,
+			value_boolean: None,
+		};
+		match value {
+			MemberPropertyValue::String(value) => input.value_string = Some(value),
+			MemberPropertyValue::Number(value) => input.value_number = Some(value),
+			MemberPropertyValue::Date(value) => input.value_date = Some(value),
+			MemberPropertyValue::Boolean(value) => input.value_boolean = Some(value),
+		}
+		input
+	}
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MemberInput {
+	pub mail: String,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub firstname: Option<String>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub lastname: Option<String>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub mobile_phone: Option<String>,
+	#[serde(skip_serializing_if = "Vec::is_empty")]
+	pub properties: Vec<MemberPropertyInput>,
+}
+
 // --- Response DTOs ---
 
 #[derive(Deserialize, Serialize, Clone)]
@@ -152,6 +206,57 @@ pub struct RoomDto {
 	pub capacity: Option<i32>,
 }
 
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MemberDto {
+	pub km_user_id: Option<i64>,
+	pub mail: Option<String>,
+	pub firstname: Option<String>,
+	pub lastname: Option<String>,
+	pub mobile_phone: Option<String>,
+	pub address: Option<AddressDto>,
+	#[serde(default)]
+	pub properties: Vec<MemberPropertyDto>,
+}
+
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AddressDto {
+	pub id: Option<i64>,
+	pub country_iso3: Option<String>,
+	pub city: Option<String>,
+	pub region: Option<String>,
+	pub postal_code: Option<String>,
+	pub streetline1: Option<String>,
+	pub streetline2: Option<String>,
+}
+
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MemberPropertyDto {
+	pub id: Option<i64>,
+	pub member_property_ext_id: Option<String>,
+	pub member_property_name: Option<String>,
+	pub member_property_active: Option<bool>,
+	#[serde(default)]
+	pub member_property_options: Vec<SelectOptionDto>,
+	pub property_type: Option<String>,
+	pub value_number: Option<f64>,
+	pub value_string: Option<String>,
+	pub value_date: Option<String>,
+	pub value_boolean: Option<bool>,
+	pub last_modified_date: Option<String>,
+	pub value_select_option: Option<SelectOptionDto>,
+	pub association_property: Option<bool>,
+	pub li_self_edit_allowed: Option<bool>,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct SelectOptionDto {
+	pub id: Option<i64>,
+	pub name: Option<String>,
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -221,5 +326,36 @@ mod tests {
 		let json = serde_json::to_string(&input).unwrap();
 		assert!(json.contains("\"description\":\"Annual concert\""));
 		assert!(!json.contains("\"name\""));
+	}
+	/// UC-005 | Main Success Scenario
+	#[test]
+	fn uc005_member_dto_deserializes_properties() {
+		let member: MemberDto =
+			serde_json::from_str(r#"{"kmUserId":42,"mail":"a@example.com","address":{"city":"Zurich","postalCode":"8000"},"properties":[{"memberPropertyExtId":"section","propertyType":"SELECT","valueSelectOption":{"id":2,"name":"Brass"}}]}"#).unwrap();
+		assert_eq!(member.km_user_id, Some(42));
+		assert_eq!(member.address.as_ref().unwrap().city.as_deref(), Some("Zurich"));
+		assert!(member.properties[0].member_property_options.is_empty());
+		assert_eq!(member.properties[0].value_select_option.as_ref().unwrap().name.as_deref(), Some("Brass"));
+	}
+
+	/// UC-006 | Main Success Scenario
+	#[test]
+	fn uc006_member_input_serializes_typed_fields() {
+		let input = MemberInput {
+			mail: "a@example.com".into(),
+			firstname: None,
+			lastname: None,
+			mobile_phone: None,
+			properties: vec![MemberPropertyInput {
+				property_ext_id: "active".into(),
+				value_string: None,
+				value_number: None,
+				value_date: None,
+				value_boolean: Some(false),
+			}],
+		};
+		let value = serde_json::to_value(input).unwrap();
+		assert_eq!(value["properties"][0]["valueBoolean"], false);
+		assert!(value.get("firstname").is_none());
 	}
 }

@@ -19,6 +19,11 @@ pub enum Commands {
 		#[command(subcommand)]
 		action: AppointmentAction,
 	},
+	/// Manage members
+	Member {
+		#[command(subcommand)]
+		action: MemberAction,
+	},
 }
 
 #[derive(Subcommand)]
@@ -145,4 +150,69 @@ pub enum AppointmentAction {
 	List(ListArgs),
 	/// Create an appointment from a template
 	Create(CreateArgs),
+}
+
+#[derive(Subcommand)]
+pub enum MemberAction {
+	/// List association members
+	List(MemberListArgs),
+	/// Add a person to the association
+	Add(MemberWriteArgs),
+	/// Change an existing member's details or data fields
+	Update(MemberWriteArgs),
+}
+
+#[derive(clap::Args)]
+pub struct MemberListArgs {
+	/// Association profile to use (overrides default)
+	#[arg(long)]
+	pub association: Option<String>,
+	/// Show only the member with this email address (case insensitive)
+	#[arg(long)]
+	pub mail: Option<String>,
+	/// Output format
+	#[arg(long, value_enum, default_value = "json")]
+	pub format: OutputFormat,
+}
+
+#[derive(clap::Args)]
+pub struct MemberWriteArgs {
+	/// Association profile to use (overrides default)
+	#[arg(long)]
+	pub association: Option<String>,
+	/// Email address identifying the member
+	#[arg(long)]
+	pub mail: String,
+	/// First name (editable for accounts that have not signed up)
+	#[arg(long)]
+	pub firstname: Option<String>,
+	/// Last name (editable for accounts that have not signed up)
+	#[arg(long)]
+	pub lastname: Option<String>,
+	/// Mobile phone number
+	#[arg(long)]
+	pub mobile_phone: Option<String>,
+	/// String data field, e.g. --prop-string section=brass (repeatable)
+	#[arg(long = "prop-string", value_name = "EXT=VALUE", value_parser = parse_property, action = clap::ArgAction::Append)]
+	pub prop_string: Vec<(String, String)>,
+	/// Number data field, e.g. --prop-number score=1.5 (repeatable)
+	#[arg(long = "prop-number", value_name = "EXT=VALUE", value_parser = parse_property, action = clap::ArgAction::Append)]
+	pub prop_number: Vec<(String, String)>,
+	/// Date and time data field, e.g. --prop-date joined=2026-06-15T19:30:00+02:00 (repeatable)
+	#[arg(long = "prop-date", value_name = "EXT=VALUE", value_parser = parse_property, action = clap::ArgAction::Append)]
+	pub prop_date: Vec<(String, String)>,
+	/// Boolean data field, e.g. --prop-bool active=true (repeatable)
+	#[arg(long = "prop-bool", value_name = "EXT=VALUE", value_parser = parse_property, action = clap::ArgAction::Append)]
+	pub prop_bool: Vec<(String, String)>,
+	/// Show the request as JSON without sending it
+	#[arg(long)]
+	pub dry_run: bool,
+}
+
+fn parse_property(value: &str) -> Result<(String, String), String> {
+	let (key, val) = value.split_once('=').ok_or("Expected EXT=VALUE")?;
+	if key.is_empty() {
+		return Err("Property external ID must not be empty".into());
+	}
+	Ok((key.to_string(), val.to_string()))
 }

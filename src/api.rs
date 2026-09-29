@@ -5,7 +5,7 @@ use log::debug;
 use serde::{Serialize, de::DeserializeOwned};
 use ureq::{Agent, config::Config};
 
-use crate::model::{AppointmentDto, AppointmentFilterInput, CreateAppointmentInput};
+use crate::model::{AppointmentDto, AppointmentFilterInput, CreateAppointmentInput, MemberDto, MemberInput};
 
 const BASE_URL: &str = "https://rest.konzertmeister.app";
 const APPOINTMENTS_PATH: &str = "/api/v4/org/m2m/appointments";
@@ -26,6 +26,15 @@ fn check_response(response: &mut ureq::http::Response<ureq::Body>, start: Instan
 	Ok(())
 }
 
+fn get_json<T: DeserializeOwned>(agent: &Agent, api_key: &str, path: &str) -> anyhow::Result<T> {
+	let url = format!("{BASE_URL}{path}");
+	debug!("GET {url}");
+	let start = Instant::now();
+	let mut response = agent.get(&url).header("X-KM-ORG-API-KEY", api_key).call().context("Failed to send request to Konzertmeister API")?;
+	check_response(&mut response, start)?;
+	response.body_mut().read_json().context("Failed to parse API response")
+}
+
 fn post_response<B: Serialize>(agent: &Agent, api_key: &str, path: &str, input: &B) -> anyhow::Result<ureq::http::Response<ureq::Body>> {
 	let url = format!("{BASE_URL}{path}");
 	let body = serde_json::to_string(input).context("Failed to serialize request")?;
@@ -44,6 +53,11 @@ fn post_response<B: Serialize>(agent: &Agent, api_key: &str, path: &str, input: 
 fn post_json<B: Serialize, T: DeserializeOwned>(agent: &Agent, api_key: &str, path: &str, input: &B) -> anyhow::Result<T> {
 	let mut response = post_response(agent, api_key, path, input)?;
 	response.body_mut().read_json().context("Failed to parse API response")
+}
+
+fn post_no_content<B: Serialize>(api_key: &str, path: &str, input: &B) -> anyhow::Result<()> {
+	post_response(&agent(), api_key, path, input)?;
+	Ok(())
 }
 
 pub fn list_appointments(api_key: &str, filter: &AppointmentFilterInput) -> anyhow::Result<Vec<AppointmentDto>> {
@@ -68,4 +82,16 @@ pub fn list_appointments(api_key: &str, filter: &AppointmentFilterInput) -> anyh
 
 pub fn create_appointment(api_key: &str, input: &CreateAppointmentInput) -> anyhow::Result<AppointmentDto> {
 	post_json(&agent(), api_key, CREATE_PATH, input)
+}
+
+pub fn list_members(api_key: &str) -> anyhow::Result<Vec<MemberDto>> {
+	get_json(&agent(), api_key, "/api/v4/org/m2m/members")
+}
+
+pub fn add_member(api_key: &str, input: &MemberInput) -> anyhow::Result<()> {
+	post_no_content(api_key, "/api/v4/org/m2m/addmember", input)
+}
+
+pub fn update_member(api_key: &str, input: &MemberInput) -> anyhow::Result<()> {
+	post_no_content(api_key, "/api/v4/org/m2m/updatemember", input)
 }

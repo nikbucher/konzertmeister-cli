@@ -2,7 +2,8 @@ use anyhow::Context;
 use chrono::{DateTime, Utc};
 use comfy_table::{Table, presets::UTF8_FULL_CONDENSED};
 
-use crate::model::AppointmentDto;
+use crate::model::{AppointmentDto, MemberDto};
+use serde::Serialize;
 
 pub fn print_json(appointments: &[AppointmentDto], utc: bool) -> anyhow::Result<()> {
 	if utc {
@@ -39,6 +40,30 @@ pub fn print_table(appointments: &[AppointmentDto], utc: bool) -> anyhow::Result
 
 	println!("{table}");
 	Ok(())
+}
+
+pub fn print_generic_json<T: Serialize>(items: &[T]) -> anyhow::Result<()> {
+	println!("{}", serde_json::to_string_pretty(items).context("Failed to serialize JSON")?);
+	Ok(())
+}
+
+pub fn print_members_table(items: &[MemberDto]) -> anyhow::Result<()> {
+	let mut table = Table::new();
+	table.load_preset(UTF8_FULL_CONDENSED);
+	table.set_header(vec!["Name", "Mail", "Phone"]);
+	for item in items {
+		table.add_row(vec![
+			full_name(item.firstname.as_deref(), item.lastname.as_deref()),
+			item.mail.clone().unwrap_or_default(),
+			item.mobile_phone.clone().unwrap_or_default(),
+		]);
+	}
+	println!("{table}");
+	Ok(())
+}
+
+fn full_name(first: Option<&str>, last: Option<&str>) -> String {
+	format!("{} {}", first.unwrap_or(""), last.unwrap_or("")).trim().to_string()
 }
 
 fn format_datetime(dt_str: Option<&str>, timezone_id: Option<&str>, utc: bool) -> String {
