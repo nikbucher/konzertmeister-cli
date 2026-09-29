@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.1",
+  "openapi": "3.1.0",
   "info": {
     "title": "Konzertmeister API",
     "description": "Konzertmeister API",
@@ -17,17 +17,44 @@
     }
   ],
   "paths": {
+    "/api/v4/org/m2m/updatemember": {
+      "post": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Update member",
+        "description": "Updates the data of a member with a given e-mail address. If the member account is not signed up firstname and lastname can be also updated. The data fields of the member can be set or updated.",
+        "operationId": "updateMemberM2m",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMemberM2mInputDtoV5"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/v4/org/m2m/appointments": {
       "post": {
         "tags": [
-          "org-resource-v-4"
+          "Organization"
         ],
+        "summary": "Get appointments of asscoiation",
+        "description": "Delivers a list of all appointments of your association based on the input filters",
         "operationId": "getUpcomingAppointmentsOfOrgWithApiKey",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AppointmentMachineFilterInputDtoV4"
+                "$ref": "#/components/schemas/AppointmentM2mFilterInputDtoV4"
               }
             }
           },
@@ -50,11 +77,38 @@
         }
       }
     },
+    "/api/v4/org/m2m/addmember": {
+      "post": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Add member",
+        "description": "Adds the person with the given e-mail address to your association. If no account is present with this e-mail address an invitation is sent. Also datafields can be set",
+        "operationId": "addMemberM2m",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddMemberM2mInputDtoV5"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/v4/app/m2m/create": {
       "post": {
         "tags": [
-          "appointment-resource-v-4"
+          "Appointments"
         ],
+        "summary": "Create appointment",
+        "description": "Creates an appointment given on a existing template",
         "operationId": "createM2mFromTemplate",
         "requestBody": {
           "content": {
@@ -79,23 +133,176 @@
           }
         }
       }
+    },
+    "/api/v4/org/m2m/members": {
+      "get": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Get members",
+        "description": "Delivers all members of your association with the basic data and the associated data fields",
+        "operationId": "getMembersOfOrgM2m",
+        "responses": {
+          "200": {
+            "description": "Members loaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MemberM2mDtoV5"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v4/att/m2m/{appId}": {
+      "get": {
+        "tags": [
+          "Replies"
+        ],
+        "summary": "Get Replies",
+        "description": "Delivers all replies of an appointment",
+        "operationId": "getM2mRepliesForAppointment",
+        "parameters": [
+          {
+            "name": "appId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Replies loaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AppointmentReplyM2mDtoV4"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/attreal/m2m/{appId}": {
+      "get": {
+        "tags": [
+          "Attendances"
+        ],
+        "summary": "Get attendances",
+        "description": "Delivers the documented attendacnes of an appointment",
+        "operationId": "getM2mRepliesForAppointment_1",
+        "parameters": [
+          {
+            "name": "appId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attendances loaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AppointmentRealAttendanceM2mDtoV4"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
-      "AppointmentMachineFilterInputDtoV4": {
+      "AddOrUpdateMemberM2mPropertyInputDtoV5": {
+        "type": "object",
+        "description": "Input Model for setting or updating data fields of a member",
+        "properties": {
+          "propertyExtId": {
+            "type": "string",
+            "description": "The external id of the property. You can look it up in the property details in the webclient"
+          },
+          "valueString": {
+            "type": "string"
+          },
+          "valueNumber": {
+            "type": "number",
+            "format": "double"
+          },
+          "valueDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "valueBoolean": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "propertyExtId"
+        ]
+      },
+      "UpdateMemberM2mInputDtoV5": {
+        "type": "object",
+        "properties": {
+          "mail": {
+            "type": "string"
+          },
+          "firstname": {
+            "type": "string"
+          },
+          "lastname": {
+            "type": "string"
+          },
+          "mobilePhone": {
+            "type": "string"
+          },
+          "properties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddOrUpdateMemberM2mPropertyInputDtoV5"
+            }
+          }
+        }
+      },
+      "AppointmentM2mFilterInputDtoV4": {
         "type": "object",
         "properties": {
           "filterStart": {
             "type": "string",
-            "format": "date-time"
+            "format": "YYYY-MM-DDTHH:mm:ss±hh:mm",
+            "description": "Filter Start date",
+            "example": "2011-12-03T10:15:30+01:00"
           },
           "filterEnd": {
             "type": "string",
-            "format": "date-time"
+            "format": "YYYY-MM-DDTHH:mm:ss±hh:mm",
+            "description": "Filter End date",
+            "example": "2011-12-03T10:15:30+01:00"
           },
           "typeIds": {
             "type": "array",
+            "description": "Filter for the appointment-type ids",
+            "example": "Rehearsal = 1,  Performance = 2,  Other = 3,  RehearsalRequest = 4,  PerformanceRequest = 5,  Information = 6",
             "items": {
               "type": "integer",
               "format": "int32"
@@ -143,7 +350,10 @@
             "type": "integer",
             "format": "int32"
           }
-        }
+        },
+        "required": [
+          "typeIds"
+        ]
       },
       "AddressDto": {
         "type": "object",
@@ -187,33 +397,45 @@
           },
           "start": {
             "type": "string",
-            "format": "date-time"
+            "format": "YYYY-MM-DDTHH:mm:ss±hh:mm",
+            "description": "Start date",
+            "example": "2011-12-03T10:15:30+01:00"
           },
           "end": {
             "type": "string",
-            "format": "date-time"
+            "format": "YYYY-MM-DDTHH:mm:ss±hh:mm",
+            "description": "End date",
+            "example": "2011-12-03T10:15:30+01:00"
           },
           "org": {
             "$ref": "#/components/schemas/OrgDtoV2"
           },
           "typId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "description": "Filter for the appointment-type ids",
+            "example": "Rehearsal = 1,  Performance = 2,  Other = 3,  RehearsalRequest = 4,  PerformanceRequest = 5,  Information = 6"
           },
           "active": {
             "type": "boolean"
           },
           "statusDeadline": {
             "type": "string",
-            "format": "date-time"
+            "format": "YYYY-MM-DDTHH:mm:ss±hh:mm",
+            "description": "Deadline for updating the reply",
+            "example": "2011-12-03T10:15:30+01:00"
           },
           "remindDeadline": {
             "type": "string",
-            "format": "date-time"
+            "format": "YYYY-MM-DDTHH:mm:ss±hh:mm",
+            "description": "Reminder date for the deadline",
+            "example": "2011-12-03T10:15:30+01:00"
           },
           "createdAt": {
             "type": "string",
-            "format": "date-time"
+            "format": "YYYY-MM-DDTHH:mm:ss±hh:mm",
+            "description": "Creation date of the appointment",
+            "example": "2011-12-03T10:15:30+01:00"
           },
           "timeUndefined": {
             "type": "boolean"
@@ -259,6 +481,9 @@
           "checkinQrCodeImageUrl": {
             "type": "string",
             "format": "url"
+          },
+          "publicsite": {
+            "type": "boolean"
           }
         }
       },
@@ -493,24 +718,24 @@
           },
           "leaderUsers": {
             "type": "array",
-            "writeOnly": true,
             "items": {
               "$ref": "#/components/schemas/KmUserMember"
-            }
+            },
+            "writeOnly": true
           },
           "secretaryUsers": {
             "type": "array",
-            "writeOnly": true,
             "items": {
               "$ref": "#/components/schemas/KmUserMember"
-            }
+            },
+            "writeOnly": true
           },
           "coLeaderUsers": {
             "type": "array",
-            "writeOnly": true,
             "items": {
               "$ref": "#/components/schemas/KmUserMember"
-            }
+            },
+            "writeOnly": true
           }
         }
       },
@@ -551,6 +776,18 @@
           "sum": {
             "type": "number",
             "format": "double"
+          },
+          "sumChf": {
+            "type": "number",
+            "format": "double"
+          },
+          "exchangeRateEurChf": {
+            "type": "number",
+            "format": "double"
+          },
+          "exchangeRateEurChfFetchedAt": {
+            "type": "string",
+            "format": "date-time"
           },
           "receiverKmUserId": {
             "type": "integer",
@@ -594,7 +831,8 @@
             "type": "string",
             "enum": [
               "TRANSFER",
-              "STRIPE"
+              "STRIPE",
+              "STRIPE_SEPA_DEBIT"
             ]
           },
           "stripePaymentMethod": {
@@ -853,11 +1091,6 @@
         }
       },
       "Member": {
-        "required": [
-          "kmUserId",
-          "orgId",
-          "roleId"
-        ],
         "type": "object",
         "properties": {
           "id": {
@@ -895,7 +1128,12 @@
               "CO_LEADER"
             ]
           }
-        }
+        },
+        "required": [
+          "kmUserId",
+          "orgId",
+          "roleId"
+        ]
       },
       "OrgDtoV2": {
         "type": "object",
@@ -1043,24 +1281,24 @@
           },
           "leaderUsers": {
             "type": "array",
-            "writeOnly": true,
             "items": {
               "$ref": "#/components/schemas/KmUserMember"
-            }
+            },
+            "writeOnly": true
           },
           "secretaryUsers": {
             "type": "array",
-            "writeOnly": true,
             "items": {
               "$ref": "#/components/schemas/KmUserMember"
-            }
+            },
+            "writeOnly": true
           },
           "coLeaderUsers": {
             "type": "array",
-            "writeOnly": true,
             "items": {
               "$ref": "#/components/schemas/KmUserMember"
-            }
+            },
+            "writeOnly": true
           }
         }
       },
@@ -1295,6 +1533,12 @@
           },
           "currentInterval": {
             "$ref": "#/components/schemas/PaymentIntervalDto"
+          },
+          "sepaDirectDebitActive": {
+            "type": "boolean"
+          },
+          "sepaDirectDebitLast4": {
+            "type": "string"
           }
         }
       },
@@ -1351,6 +1595,35 @@
           }
         }
       },
+      "AddMemberM2mInputDtoV5": {
+        "type": "object",
+        "description": "Input Model for adding a member to your association",
+        "properties": {
+          "firstname": {
+            "type": "string"
+          },
+          "lastname": {
+            "type": "string"
+          },
+          "mail": {
+            "type": "string",
+            "description": "E-Mail address"
+          },
+          "mobilePhone": {
+            "type": "string"
+          },
+          "properties": {
+            "type": "array",
+            "description": "List of datafields that can be set for the member",
+            "items": {
+              "$ref": "#/components/schemas/AddOrUpdateMemberM2mPropertyInputDtoV5"
+            }
+          }
+        },
+        "required": [
+          "mail"
+        ]
+      },
       "CreateAppointmentFromTemplateM2mInputDtoV4": {
         "type": "object",
         "properties": {
@@ -1362,12 +1635,190 @@
           },
           "startZoned": {
             "type": "string",
-            "format": "date-time"
+            "format": "YYYY-MM-DDTHH:mm:ss±hh:mm",
+            "description": "Start date of the appointment",
+            "example": "2011-12-03T10:15:30+01:00"
           },
           "appointmentTemplateExtId": {
-            "type": "string"
+            "type": "string",
+            "description": "External id of the template that should be used. You can find this id in the template details in the webclient"
           },
           "creatorMail": {
+            "type": "string",
+            "description": "E-Mail address of the account that should be listed as creator of the appointment in the clients. The account must have the permissions to create appointments for the specified sections/group"
+          }
+        },
+        "required": [
+          "appointmentTemplateExtId",
+          "creatorMail",
+          "startZoned"
+        ]
+      },
+      "MemberM2mDtoV5": {
+        "type": "object",
+        "properties": {
+          "kmUserId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "mail": {
+            "type": "string"
+          },
+          "firstname": {
+            "type": "string"
+          },
+          "lastname": {
+            "type": "string"
+          },
+          "mobilePhone": {
+            "type": "string"
+          },
+          "address": {
+            "$ref": "#/components/schemas/AddressDto"
+          },
+          "properties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MemberPropertyInstanceM2mDtoV4"
+            }
+          }
+        }
+      },
+      "MemberPropertyInstanceM2mDtoV4": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "memberPropertyExtId": {
+            "type": "string",
+            "description": "The external id of the property"
+          },
+          "memberPropertyName": {
+            "type": "string"
+          },
+          "memberPropertyActive": {
+            "type": "boolean"
+          },
+          "memberPropertyOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MemberPropertySelectOptionDtoV4"
+            }
+          },
+          "propertyType": {
+            "type": "string",
+            "enum": [
+              "NUMBER",
+              "STRING",
+              "DATE",
+              "BOOLEAN",
+              "SELECT"
+            ]
+          },
+          "valueNumber": {
+            "type": "number",
+            "format": "double"
+          },
+          "valueString": {
+            "type": "string"
+          },
+          "valueDate": {
+            "type": "string",
+            "format": "YYYY-MM-DDTHH:mm:ss±hh:mm",
+            "description": "Date Value of the property",
+            "example": "2011-12-03T10:15:30+01:00"
+          },
+          "valueBoolean": {
+            "type": "boolean"
+          },
+          "lastModifiedDate": {
+            "type": "string",
+            "format": "YYYY-MM-DDTHH:mm:ss±hh:mm",
+            "description": "Last modified date of the instance",
+            "example": "2011-12-03T10:15:30+01:00"
+          },
+          "valueSelectOption": {
+            "$ref": "#/components/schemas/MemberPropertySelectOptionDtoV4"
+          },
+          "associationProperty": {
+            "type": "boolean"
+          },
+          "liSelfEditAllowed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "MemberPropertySelectOptionDtoV4": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "AppointmentReplyM2mDtoV4": {
+        "type": "object",
+        "properties": {
+          "kmUserId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "kmUserFirstName": {
+            "type": "string"
+          },
+          "kmUserLastName": {
+            "type": "string"
+          },
+          "kmUserEmail": {
+            "type": "string"
+          },
+          "externalInvite": {
+            "type": "boolean"
+          },
+          "reply": {
+            "type": "string",
+            "enum": [
+              "POSITIVE",
+              "MAYBE",
+              "NEGATIVE",
+              "UNANSWERED"
+            ]
+          },
+          "replyComment": {
+            "type": "string"
+          },
+          "repliedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AppointmentRealAttendanceM2mDtoV4": {
+        "type": "object",
+        "properties": {
+          "kmUserId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "kmUserFirstName": {
+            "type": "string"
+          },
+          "kmUserLastName": {
+            "type": "string"
+          },
+          "kmUserEmail": {
+            "type": "string"
+          },
+          "attending": {
+            "type": "boolean"
+          },
+          "comment": {
             "type": "string"
           }
         }
