@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+pub const ALL_TYPE_IDS: [i32; 6] = [1, 2, 3, 4, 5, 6];
+
 // --- Request DTOs ---
 
 #[derive(Serialize)]
@@ -14,14 +16,13 @@ pub struct CreateAppointmentInput {
 	pub creator_mail: String,
 }
 
-#[derive(Serialize, Default)]
+#[derive(Serialize, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AppointmentFilterInput {
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub filter_start: Option<String>,
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub filter_end: Option<String>,
-	#[serde(skip_serializing_if = "Vec::is_empty")]
 	pub type_ids: Vec<i32>,
 	#[serde(skip_serializing_if = "Vec::is_empty")]
 	pub activation_status_list: Vec<ActivationStatus>,
@@ -78,6 +79,7 @@ pub struct AppointmentDto {
 	pub timezone_id: Option<String>,
 	pub active: Option<bool>,
 	pub published: Option<bool>,
+	pub publicsite: Option<bool>,
 	pub typ_id: Option<i32>,
 	pub status_deadline: Option<String>,
 	pub remind_deadline: Option<String>,
@@ -159,7 +161,7 @@ mod tests {
 	fn uc002_filter_input_skips_empty_fields() {
 		let filter = AppointmentFilterInput::default();
 		let json = serde_json::to_string(&filter).unwrap();
-		assert_eq!(json, "{}");
+		assert_eq!(json, "{\"typeIds\":[]}");
 	}
 
 	/// UC-002 | Main Success Scenario

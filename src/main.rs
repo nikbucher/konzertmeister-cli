@@ -7,8 +7,8 @@ mod output;
 use anyhow::Context;
 use clap::Parser;
 
-use cli::{Cli, Commands, ConfigAction, CreateArgs, ListArgs, OutputFormat};
-use model::{ActivationStatus, AppointmentFilterInput, CreateAppointmentInput, DateMode, PublishedStatus, SortModeApi};
+use cli::{AppointmentAction, Cli, Commands, ConfigAction, CreateArgs, ListArgs, OutputFormat};
+use model::{ALL_TYPE_IDS, ActivationStatus, AppointmentFilterInput, CreateAppointmentInput, DateMode, PublishedStatus, SortModeApi};
 
 fn main() {
 	env_logger::Builder::from_default_env().format_timestamp_millis().init();
@@ -23,8 +23,10 @@ fn run() -> anyhow::Result<()> {
 
 	match cli.command {
 		Commands::Config { action } => handle_config(action),
-		Commands::List(args) => handle_list(args),
-		Commands::Create(args) => handle_create(args),
+		Commands::Appointment { action } => match action {
+			AppointmentAction::List(args) => handle_list(args),
+			AppointmentAction::Create(args) => handle_create(args),
+		},
 	}
 }
 
@@ -38,8 +40,7 @@ fn handle_config(action: ConfigAction) -> anyhow::Result<()> {
 }
 
 fn handle_list(args: ListArgs) -> anyhow::Result<()> {
-	let cfg = config::load_config().context("Failed to load configuration")?;
-	let (_, profile) = config::resolve_profile(&cfg, args.association.as_deref())?;
+	let (_, profile) = selected_profile(args.association.as_deref())?;
 
 	let filter = build_filter(&args);
 	let appointments = api::list_appointments(&profile.api_key, &filter)?;
@@ -51,8 +52,7 @@ fn handle_list(args: ListArgs) -> anyhow::Result<()> {
 }
 
 fn handle_create(args: CreateArgs) -> anyhow::Result<()> {
-	let cfg = config::load_config().context("Failed to load configuration")?;
-	let (profile_name, profile) = config::resolve_profile(&cfg, args.association.as_deref())?;
+	let (profile_name, profile) = selected_profile(args.association.as_deref())?;
 
 	let creator_mail = profile
 		.creator_mail
@@ -81,7 +81,13 @@ fn handle_create(args: CreateArgs) -> anyhow::Result<()> {
 	Ok(())
 }
 
-/// Resolve a start datetime to a zoned ISO 8601 string (BR-009).
+fn selected_profile(association: Option<&str>) -> anyhow::Result<(String, config::Profile)> {
+	let cfg = config::load_config().context("Failed to load configuration")?;
+	let (name, profile) = config::resolve_profile(&cfg, association)?;
+	Ok((name.to_string(), profile.clone()))
+}
+
+/// Resolve a start datetime to a zoned ISO 8601 string (UC-003 BR-001).
 /// - Naive datetime → interpret as local machine timezone, convert to offset format.
 /// - UTC or zoned datetime → pass through unchanged.
 fn resolve_start_zoned(input: &str) -> anyhow::Result<String> {
@@ -108,7 +114,7 @@ fn resolve_start_zoned(input: &str) -> anyhow::Result<String> {
 	Ok(zoned.format("%Y-%m-%dT%H:%M:%S%:z").to_string())
 }
 
-/// Normalize a date input to ISO 8601 date-time (BR-008).
+/// Normalize a date input to ISO 8601 date-time (UC-002 BR-005).
 /// - "2026-01-01"           → "2026-01-01T{suffix}"
 /// - "2026-01-01T14:00:00"  → "2026-01-01T14:00:00Z"
 /// - "2026-01-01T14:00:00Z" → unchanged
@@ -151,7 +157,7 @@ fn build_filter(args: &ListArgs) -> AppointmentFilterInput {
 	AppointmentFilterInput {
 		filter_start: args.from.as_deref().map(|d| normalize_datetime(d, "00:00:00Z")),
 		filter_end: args.to.as_deref().map(|d| normalize_datetime(d, "23:59:59Z")),
-		type_ids: args.type_ids.clone(),
+		type_ids: if args.type_ids.is_empty() { ALL_TYPE_IDS.to_vec() } else { args.type_ids.clone() },
 		activation_status_list,
 		published_status,
 		tags: args.tag.clone(),
@@ -165,61 +171,61 @@ fn build_filter(args: &ListArgs) -> AppointmentFilterInput {
 mod tests {
 	use super::*;
 
-	/// UC-002 | BR-008: Date Input Normalization
+	/// UC-002 | BR-005: Date Input Normalization
 	#[test]
 	fn uc002_normalize_plain_date_from() {
 		assert_eq!(normalize_datetime("2026-01-01", "00:00:00Z"), "2026-01-01T00:00:00Z");
 	}
 
-	/// UC-002 | BR-008: Date Input Normalization
+	/// UC-002 | BR-005: Date Input Normalization
 	#[test]
 	fn uc002_normalize_plain_date_to() {
 		assert_eq!(normalize_datetime("2026-12-31", "23:59:59Z"), "2026-12-31T23:59:59Z");
 	}
 
-	/// UC-002 | BR-008: Date Input Normalization
+	/// UC-002 | BR-005: Date Input Normalization
 	#[test]
 	fn uc002_normalize_naive_datetime_appends_z() {
 		assert_eq!(normalize_datetime("2026-01-01T14:00:00", "00:00:00Z"), "2026-01-01T14:00:00Z");
 	}
 
-	/// UC-002 | BR-008: Date Input Normalization
+	/// UC-002 | BR-005: Date Input Normalization
 	#[test]
 	fn uc002_normalize_utc_datetime_unchanged() {
 		assert_eq!(normalize_datetime("2026-01-01T14:00:00Z", "00:00:00Z"), "2026-01-01T14:00:00Z");
 	}
 
-	/// UC-002 | BR-008: Date Input Normalization
+	/// UC-002 | BR-005: Date Input Normalization
 	#[test]
 	fn uc002_normalize_positive_offset_unchanged() {
 		assert_eq!(normalize_datetime("2026-01-01T14:00:00+02:00", "00:00:00Z"), "2026-01-01T14:00:00+02:00");
 	}
 
-	/// UC-002 | BR-008: Date Input Normalization
+	/// UC-002 | BR-005: Date Input Normalization
 	#[test]
 	fn uc002_normalize_negative_offset_unchanged() {
 		assert_eq!(normalize_datetime("2026-01-01T14:00:00-05:00", "00:00:00Z"), "2026-01-01T14:00:00-05:00");
 	}
 
-	/// UC-003 | BR-009: Naive Datetime Timezone Resolution
+	/// UC-003 | BR-001: Naive Datetime Timezone Resolution
 	#[test]
 	fn uc003_resolve_start_utc_passthrough() {
 		assert_eq!(resolve_start_zoned("2026-06-15T19:30:00Z").unwrap(), "2026-06-15T19:30:00Z");
 	}
 
-	/// UC-003 | BR-009: Naive Datetime Timezone Resolution
+	/// UC-003 | BR-001: Naive Datetime Timezone Resolution
 	#[test]
 	fn uc003_resolve_start_positive_offset_passthrough() {
 		assert_eq!(resolve_start_zoned("2026-06-15T19:30:00+02:00").unwrap(), "2026-06-15T19:30:00+02:00");
 	}
 
-	/// UC-003 | BR-009: Naive Datetime Timezone Resolution
+	/// UC-003 | BR-001: Naive Datetime Timezone Resolution
 	#[test]
 	fn uc003_resolve_start_negative_offset_passthrough() {
 		assert_eq!(resolve_start_zoned("2026-06-15T19:30:00-05:00").unwrap(), "2026-06-15T19:30:00-05:00");
 	}
 
-	/// UC-003 | BR-009: Naive Datetime Timezone Resolution
+	/// UC-003 | BR-001: Naive Datetime Timezone Resolution
 	#[test]
 	fn uc003_resolve_start_naive_adds_local_offset() {
 		let result = resolve_start_zoned("2026-06-15T19:30:00").unwrap();
@@ -229,14 +235,14 @@ mod tests {
 		assert!(!result.ends_with('Z'));
 	}
 
-	/// UC-003 | BR-009: Naive Datetime Timezone Resolution
+	/// UC-003 | BR-001: Naive Datetime Timezone Resolution
 	#[test]
 	fn uc003_resolve_start_naive_short_format() {
 		let result = resolve_start_zoned("2026-06-15T19:30").unwrap();
 		assert!(result.starts_with("2026-06-15T19:30:00"));
 	}
 
-	/// UC-003 | BR-009: Naive Datetime Timezone Resolution
+	/// UC-003 | BR-001: Naive Datetime Timezone Resolution
 	#[test]
 	fn uc003_resolve_start_date_only_rejected() {
 		let result = resolve_start_zoned("2026-06-15");
@@ -244,7 +250,7 @@ mod tests {
 		assert!(result.unwrap_err().to_string().contains("requires a datetime"));
 	}
 
-	/// UC-003 | BR-009: Naive Datetime Timezone Resolution
+	/// UC-003 | BR-001: Naive Datetime Timezone Resolution
 	#[test]
 	fn uc003_resolve_start_invalid_format_rejected() {
 		let result = resolve_start_zoned("2026-06-15Tnonsense");
@@ -270,7 +276,7 @@ mod tests {
 		}
 	}
 
-	/// UC-002 | BR-004: Default Date Mode
+	/// UC-002 | BR-001: Default Date Mode
 	#[test]
 	fn uc002_build_filter_defaults_to_upcoming() {
 		let filter = build_filter(&default_list_args());
@@ -281,7 +287,7 @@ mod tests {
 	}
 
 	/// UC-002 | A1: Filter by Date Range
-	/// Business Rules: BR-008
+	/// Business Rules: BR-005
 	#[test]
 	fn uc002_build_filter_from_to_switches_to_from_date() {
 		let args = ListArgs {
@@ -318,7 +324,7 @@ mod tests {
 	}
 
 	/// UC-002 | A11: Explicit Page Selection
-	/// Business Rules: BR-006
+	/// Business Rules: BR-003
 	#[test]
 	fn uc002_build_filter_explicit_page() {
 		let args = ListArgs { page: Some(3), ..default_list_args() };
@@ -327,12 +333,14 @@ mod tests {
 		assert!(json.contains("\"page\":3"));
 	}
 
-	/// UC-002 | BR-005: Output Format Default
+	/// UC-002 | BR-002: Output Format Default
 	#[test]
 	fn uc002_output_format_defaults_to_json() {
-		let cli = Cli::parse_from(["km", "list"]);
+		let cli = Cli::parse_from(["km", "appointment", "list"]);
 		match cli.command {
-			Commands::List(args) => assert_eq!(args.format, OutputFormat::Json),
+			Commands::Appointment {
+				action: AppointmentAction::List(args),
+			} => assert_eq!(args.format, OutputFormat::Json),
 			_ => panic!("Expected List command"),
 		}
 	}
@@ -340,14 +348,40 @@ mod tests {
 	/// UC-003 | A9: Missing Required Flags
 	#[test]
 	fn uc003_missing_template_rejected() {
-		let result = Cli::try_parse_from(["km", "create", "--start", "2026-06-15T19:30:00"]);
+		let result = Cli::try_parse_from(["km", "appointment", "create", "--start", "2026-06-15T19:30:00"]);
 		assert!(result.is_err());
 	}
 
 	/// UC-003 | A9: Missing Required Flags
 	#[test]
 	fn uc003_missing_start_rejected() {
-		let result = Cli::try_parse_from(["km", "create", "--template", "tmpl-1"]);
+		let result = Cli::try_parse_from(["km", "appointment", "create", "--template", "tmpl-1"]);
 		assert!(result.is_err());
+	}
+	/// UC-002 | Required typeIds default
+	#[test]
+	fn uc002_default_type_ids() {
+		assert_eq!(build_filter(&default_list_args()).type_ids, ALL_TYPE_IDS);
+	}
+
+	/// UC-002 | A2: Explicit appointment types replace the default
+	#[test]
+	fn uc002_explicit_type_ids_replace_default() {
+		let args = ListArgs {
+			type_ids: vec![2, 5],
+			..default_list_args()
+		};
+		assert_eq!(build_filter(&args).type_ids, vec![2, 5]);
+	}
+
+	/// UC-002 / UC-003 | Legacy top-level commands are removed
+	#[test]
+	fn uc002_uc003_legacy_commands_rejected() {
+		assert!(Cli::try_parse_from(["km", "list"]).is_err());
+		assert!(Cli::try_parse_from(["km", "create", "--template", "tmpl-1", "--start", "2026-06-15T19:30:00"]).is_err());
+		assert!(matches!(
+			Cli::parse_from(["km", "appointment", "list"]).command,
+			Commands::Appointment { action: AppointmentAction::List(_) }
+		));
 	}
 }

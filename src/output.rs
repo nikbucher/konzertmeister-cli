@@ -99,7 +99,7 @@ fn convert_appointment_times(appointment: &AppointmentDto) -> anyhow::Result<ser
 mod tests {
 	use super::*;
 
-	/// UC-002 | BR-007: Timezone Display Default
+	/// UC-002 | BR-004: Timezone Display Default
 	#[test]
 	fn uc002_convert_utc_to_zurich() {
 		let result = convert_to_local("2026-03-15T17:00:00Z", Some("Europe/Zurich"));
@@ -109,14 +109,14 @@ mod tests {
 		assert!(local.contains("18:00"));
 	}
 
-	/// UC-002 | BR-007: Timezone Display Default
+	/// UC-002 | BR-004: Timezone Display Default
 	#[test]
 	fn uc002_convert_unknown_timezone_returns_none() {
 		let result = convert_to_local("2026-03-15T17:00:00Z", Some("Invalid/Timezone"));
 		assert!(result.is_none());
 	}
 
-	/// UC-002 | BR-007: Timezone Display Default
+	/// UC-002 | BR-004: Timezone Display Default
 	#[test]
 	fn uc002_convert_no_timezone_returns_none() {
 		let result = convert_to_local("2026-03-15T17:00:00Z", None);

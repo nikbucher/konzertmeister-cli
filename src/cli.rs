@@ -14,10 +14,11 @@ pub enum Commands {
 		#[command(subcommand)]
 		action: ConfigAction,
 	},
-	/// List appointments
-	List(ListArgs),
-	/// Create an appointment from a template
-	Create(CreateArgs),
+	/// Manage appointments
+	Appointment {
+		#[command(subcommand)]
+		action: AppointmentAction,
+	},
 }
 
 #[derive(Subcommand)]
@@ -136,4 +137,12 @@ pub enum SortMode {
 pub enum OutputFormat {
 	Json,
 	Table,
+}
+
+#[derive(Subcommand)]
+pub enum AppointmentAction {
+	/// List appointments with optional filters
+	List(ListArgs),
+	/// Create an appointment from a template
+	Create(CreateArgs),
 }
