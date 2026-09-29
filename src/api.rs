@@ -5,7 +5,7 @@ use log::debug;
 use serde::{Serialize, de::DeserializeOwned};
 use ureq::{Agent, config::Config};
 
-use crate::model::{AppointmentDto, AppointmentFilterInput, CreateAppointmentInput, MemberDto, MemberInput, ReplyDto};
+use crate::model::{AppointmentDto, AppointmentFilterInput, AttendanceDto, CreateAppointmentInput, MemberDto, MemberInput, ReplyDto};
 
 const BASE_URL: &str = "https://rest.konzertmeister.app";
 const APPOINTMENTS_PATH: &str = "/api/v4/org/m2m/appointments";
@@ -98,4 +98,8 @@ pub fn update_member(api_key: &str, input: &MemberInput) -> anyhow::Result<()> {
 
 pub fn list_replies(api_key: &str, app_id: i64) -> anyhow::Result<Vec<ReplyDto>> {
 	get_json(&agent(), api_key, &format!("/api/v4/att/m2m/{app_id}"))
+}
+
+pub fn list_attendances(api_key: &str, app_id: i64) -> anyhow::Result<Vec<AttendanceDto>> {
+	get_json(&agent(), api_key, &format!("/api/v2/attreal/m2m/{app_id}"))
 }

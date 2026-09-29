@@ -7,10 +7,12 @@ mod output;
 use anyhow::Context;
 use clap::Parser;
 
-use cli::{AppointmentAction, Cli, Commands, ConfigAction, CreateArgs, ListArgs, MemberAction, MemberListArgs, MemberWriteArgs, OutputFormat, ReplyAction, ReplyListArgs};
+use cli::{
+	AppointmentAction, AttendanceAction, AttendanceListArgs, Cli, Commands, ConfigAction, CreateArgs, ListArgs, MemberAction, MemberListArgs, MemberWriteArgs, OutputFormat, ReplyAction, ReplyListArgs,
+};
 use model::{
-	ALL_TYPE_IDS, ActivationStatus, AppointmentFilterInput, CreateAppointmentInput, DateMode, MemberDto, MemberInput, MemberPropertyInput, MemberPropertyValue, PublishedStatus, Reply, ReplyDto,
-	SortModeApi,
+	ALL_TYPE_IDS, ActivationStatus, AppointmentFilterInput, AttendanceDto, CreateAppointmentInput, DateMode, MemberDto, MemberInput, MemberPropertyInput, MemberPropertyValue, PublishedStatus, Reply,
+	ReplyDto, SortModeApi,
 };
 
 fn main() {
@@ -37,6 +39,9 @@ fn run() -> anyhow::Result<()> {
 		},
 		Commands::Reply { action } => match action {
 			ReplyAction::List(args) => handle_reply_list(args),
+		},
+		Commands::Attendance { action } => match action {
+			AttendanceAction::List(args) => handle_attendance_list(args),
 		},
 	}
 }
@@ -116,6 +121,16 @@ fn filter_replies(mut replies: Vec<ReplyDto>, reply: Option<&Reply>) -> Vec<Repl
 	replies
 }
 
+fn filter_attendances(mut attendances: Vec<AttendanceDto>, attending: bool, absent: bool) -> Vec<AttendanceDto> {
+	if attending {
+		attendances.retain(|item| item.attending == Some(true));
+	}
+	if absent {
+		attendances.retain(|item| item.attending == Some(false));
+	}
+	attendances
+}
+
 fn handle_member_list(args: MemberListArgs) -> anyhow::Result<()> {
 	let key = profile_key(args.association.as_deref())?;
 	let members = filter_members(api::list_members(&key)?, args.mail.as_deref());
@@ -188,6 +203,15 @@ fn handle_reply_list(args: ReplyListArgs) -> anyhow::Result<()> {
 	match args.format {
 		OutputFormat::Json => output::print_generic_json(&replies),
 		OutputFormat::Table => output::print_replies_table(&replies),
+	}
+}
+
+fn handle_attendance_list(args: AttendanceListArgs) -> anyhow::Result<()> {
+	let key = profile_key(args.association.as_deref())?;
+	let attendances = filter_attendances(api::list_attendances(&key, args.app_id)?, args.attending, args.absent);
+	match args.format {
+		OutputFormat::Json => output::print_generic_json(&attendances),
+		OutputFormat::Table => output::print_attendances_table(&attendances),
 	}
 }
 
@@ -588,5 +612,22 @@ mod tests {
 		let matched = filter_replies(replies, args.reply.as_ref());
 		assert_eq!(matched.len(), 1);
 		assert!(filter_replies(matched, Some(&Reply::Negative)).is_empty());
+	}
+
+	/// UC-009 | A1: Filter by Attendance
+	#[test]
+	fn uc009_attendance_filter_and_exclusive_flags() {
+		let cli = Cli::parse_from(["km", "attendance", "list", "123", "--absent"]);
+		let Commands::Attendance { action: AttendanceAction::List(args) } = cli.command else {
+			panic!("Expected attendance list")
+		};
+		assert_eq!(args.app_id, 123);
+		let attendances: Vec<AttendanceDto> = serde_json::from_str(r#"[{"attending":true},{"attending":false},{"attending":null}]"#).unwrap();
+		assert_eq!(filter_attendances(attendances, false, args.absent).len(), 1);
+		let attendances: Vec<AttendanceDto> = serde_json::from_str(r#"[{"attending":true},{"attending":false},{"attending":null}]"#).unwrap();
+		assert_eq!(filter_attendances(attendances, true, false).len(), 1);
+		let attendances: Vec<AttendanceDto> = serde_json::from_str(r#"[{"attending":true},{"attending":false},{"attending":null}]"#).unwrap();
+		assert!(filter_attendances(attendances, true, true).is_empty());
+		assert!(Cli::try_parse_from(["km", "attendance", "list", "123", "--attending", "--absent"]).is_err());
 	}
 }

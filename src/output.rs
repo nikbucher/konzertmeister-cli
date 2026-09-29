@@ -3,7 +3,7 @@ use chrono::{DateTime, Local, Utc};
 use clap::ValueEnum;
 use comfy_table::{Table, presets::UTF8_FULL_CONDENSED};
 
-use crate::model::{AppointmentDto, MemberDto, ReplyDto};
+use crate::model::{AppointmentDto, AttendanceDto, MemberDto, ReplyDto};
 use serde::Serialize;
 
 pub fn print_json(appointments: &[AppointmentDto], utc: bool) -> anyhow::Result<()> {
@@ -79,6 +79,22 @@ pub fn print_replies_table(items: &[ReplyDto]) -> anyhow::Result<()> {
 			reply,
 			item.reply_comment.clone().unwrap_or_default(),
 			format_reply_datetime(item.replied_at.as_deref()),
+		]);
+	}
+	println!("{table}");
+	Ok(())
+}
+
+pub fn print_attendances_table(items: &[AttendanceDto]) -> anyhow::Result<()> {
+	let mut table = Table::new();
+	table.load_preset(UTF8_FULL_CONDENSED);
+	table.set_header(vec!["Name", "Mail", "Attending", "Comment"]);
+	for item in items {
+		table.add_row(vec![
+			full_name(item.km_user_first_name.as_deref(), item.km_user_last_name.as_deref()),
+			item.km_user_email.clone().unwrap_or_default(),
+			item.attending.map(|x| if x { "yes" } else { "no" }).unwrap_or("").to_string(),
+			item.comment.clone().unwrap_or_default(),
 		]);
 	}
 	println!("{table}");

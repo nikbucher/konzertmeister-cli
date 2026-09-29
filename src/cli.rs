@@ -30,6 +30,11 @@ pub enum Commands {
 		#[command(subcommand)]
 		action: ReplyAction,
 	},
+	/// View recorded attendance
+	Attendance {
+		#[command(subcommand)]
+		action: AttendanceAction,
+	},
 }
 
 #[derive(Subcommand)]
@@ -174,6 +179,12 @@ pub enum ReplyAction {
 	List(ReplyListArgs),
 }
 
+#[derive(Subcommand)]
+pub enum AttendanceAction {
+	/// List recorded attendance for an appointment
+	List(AttendanceListArgs),
+}
+
 #[derive(clap::Args)]
 pub struct MemberListArgs {
 	/// Association profile to use (overrides default)
@@ -240,6 +251,25 @@ pub struct ReplyListArgs {
 	/// Show only replies with this value
 	#[arg(long, value_enum)]
 	pub reply: Option<Reply>,
+	/// Output format
+	#[arg(long, value_enum, default_value = "json")]
+	pub format: OutputFormat,
+}
+
+#[derive(clap::Args)]
+pub struct AttendanceListArgs {
+	/// Appointment ID from appointment list
+	#[arg(value_name = "APPOINTMENT_ID")]
+	pub app_id: i64,
+	/// Association profile to use (overrides default)
+	#[arg(long)]
+	pub association: Option<String>,
+	/// Show only members recorded as present
+	#[arg(long, conflicts_with = "absent")]
+	pub attending: bool,
+	/// Show only members recorded as absent
+	#[arg(long, conflicts_with = "attending")]
+	pub absent: bool,
 	/// Output format
 	#[arg(long, value_enum, default_value = "json")]
 	pub format: OutputFormat,

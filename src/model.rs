@@ -282,6 +282,17 @@ pub struct ReplyDto {
 	pub replied_at: Option<String>,
 }
 
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AttendanceDto {
+	pub km_user_id: Option<i64>,
+	pub km_user_first_name: Option<String>,
+	pub km_user_last_name: Option<String>,
+	pub km_user_email: Option<String>,
+	pub attending: Option<bool>,
+	pub comment: Option<String>,
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -396,5 +407,12 @@ mod tests {
 	fn uc008_unknown_reply_deserializes() {
 		let reply: ReplyDto = serde_json::from_str(r#"{"reply":"LATER"}"#).unwrap();
 		assert_eq!(reply.reply, Some(Reply::Unknown));
+	}
+
+	/// UC-009 | Main Success Scenario
+	#[test]
+	fn uc009_attendance_dto_deserializes() {
+		let attendance: AttendanceDto = serde_json::from_str(r#"{"kmUserEmail":"a@example.com","attending":false}"#).unwrap();
+		assert_eq!(attendance.attending, Some(false));
 	}
 }
