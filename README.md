@@ -1,6 +1,10 @@
 # km — Konzertmeister CLI
 
+[![Release](https://github.com/nikbucher/konzertmeister-cli/actions/workflows/release.yml/badge.svg)](https://github.com/nikbucher/konzertmeister-cli/actions/workflows/release.yml)
 [![CI](https://github.com/nikbucher/konzertmeister-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/nikbucher/konzertmeister-cli/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/nikbucher/konzertmeister-cli)](https://github.com/nikbucher/konzertmeister-cli/releases/latest)
+[![License: MIT](https://img.shields.io/github/license/nikbucher/konzertmeister-cli)](LICENSE)
+[![Rust](https://img.shields.io/badge/rust-1.85%2B-DEA584.svg?logo=rust)](https://blog.rust-lang.org/2025/02/20/Rust-1.85.0/)
 
 A command-line tool for the [Konzertmeister](https://konzertmeister.app) API. Manage appointments and members, and view replies and attendance for your music association.
 
