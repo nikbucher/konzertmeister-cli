@@ -133,3 +133,11 @@ Tests follow the naming convention documented in [CONTRIBUTING.md](../../CONTRIB
 | A6: Appointment or Service Unavailable | — | ⬜ Needs HTTP mock |
 | BR-001: Attendance Source | — | ⬜ Needs HTTP mock |
 | BR-002: Filter Semantics | `tests::uc009_attendance_filter_and_exclusive_flags` | ✅ Unit |
+
+## UC-010: Show Version
+
+| Scenario / Business Rule | Test(s) | Status |
+|--------------------------|---------|--------|
+| Main Success Scenario | `cli::uc010_version_flag_prints_package_version` | ✅ Integration |
+| BR-001: Version Source and Format | `cli::uc010_version_flag_prints_package_version` | ✅ Integration |
+| BR-002: No Association Required | `cli::uc010_version_flag_prints_package_version` | ✅ Integration (exit code); no-config run not isolated |

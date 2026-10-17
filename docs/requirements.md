@@ -25,6 +25,7 @@
 | FR-019 | Member table | As an association admin, I want a member table with name, email, and phone so that I can scan the association roster in the terminal. | Low | Implemented |
 | FR-020 | Reply table | As an association admin, I want a reply table with name, email, reply, comment, and reply time so that I can scan responses in the terminal. | Low | Implemented |
 | FR-021 | Attendance table | As an association admin, I want an attendance table with name, email, attendance state, and comment so that I can scan recorded participation in the terminal. | Low | Implemented |
+| FR-022 | Show version | As an association admin, I want to check the installed CLI version so that I can confirm which release I am running when reporting issues or upgrading. | Low | Implemented |
 
 ## Non-Functional Requirements
 

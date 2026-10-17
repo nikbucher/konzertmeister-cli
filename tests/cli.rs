@@ -38,8 +38,10 @@ fn uc007_empty_update_reports_error() {
 	assert!(output.stdout.is_empty());
 }
 
+/// UC-010 | Main Success Scenario
+/// Business Rules: BR-001, BR-002
 #[test]
-fn version_flag_prints_package_version() {
+fn uc010_version_flag_prints_package_version() {
 	for flag in ["--version", "-V"] {
 		let output = Command::new(env!("CARGO_BIN_EXE_km")).arg(flag).output().expect("run km");
 		assert!(output.status.success());
