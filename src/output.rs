@@ -22,7 +22,7 @@ pub fn print_json(appointments: &[AppointmentDto], utc: bool) -> anyhow::Result<
 
 pub fn print_table(appointments: &[AppointmentDto], utc: bool) -> anyhow::Result<()> {
 	let mut table = Table::new();
-	table.load_preset(UTF8_FULL_CONDENSED);
+	table.load_style(UTF8_FULL_CONDENSED);
 	table.set_header(vec!["ID", "Name", "Start", "End", "Location", "Remind Deadline", "Status Deadline", "Active", "Tags"]);
 
 	for appointment in appointments {
@@ -50,7 +50,7 @@ pub fn print_generic_json<T: Serialize>(items: &[T]) -> anyhow::Result<()> {
 
 pub fn print_members_table(items: &[MemberDto]) -> anyhow::Result<()> {
 	let mut table = Table::new();
-	table.load_preset(UTF8_FULL_CONDENSED);
+	table.load_style(UTF8_FULL_CONDENSED);
 	table.set_header(vec!["Name", "Mail", "Phone"]);
 	for item in items {
 		table.add_row(vec![
@@ -65,7 +65,7 @@ pub fn print_members_table(items: &[MemberDto]) -> anyhow::Result<()> {
 
 pub fn print_replies_table(items: &[ReplyDto]) -> anyhow::Result<()> {
 	let mut table = Table::new();
-	table.load_preset(UTF8_FULL_CONDENSED);
+	table.load_style(UTF8_FULL_CONDENSED);
 	table.set_header(vec!["Name", "Mail", "Reply", "Comment", "Replied At"]);
 	for item in items {
 		let reply = item
@@ -87,7 +87,7 @@ pub fn print_replies_table(items: &[ReplyDto]) -> anyhow::Result<()> {
 
 pub fn print_attendances_table(items: &[AttendanceDto]) -> anyhow::Result<()> {
 	let mut table = Table::new();
-	table.load_preset(UTF8_FULL_CONDENSED);
+	table.load_style(UTF8_FULL_CONDENSED);
 	table.set_header(vec!["Name", "Mail", "Attending", "Comment"]);
 	for item in items {
 		table.add_row(vec![
