@@ -37,3 +37,13 @@ fn uc007_empty_update_reports_error() {
 	assert!(String::from_utf8_lossy(&output.stderr).contains("nothing to update"));
 	assert!(output.stdout.is_empty());
 }
+
+#[test]
+fn version_flag_prints_package_version() {
+	for flag in ["--version", "-V"] {
+		let output = Command::new(env!("CARGO_BIN_EXE_km")).arg(flag).output().expect("run km");
+		assert!(output.status.success());
+		assert_eq!(String::from_utf8_lossy(&output.stdout), format!("km {}\n", env!("CARGO_PKG_VERSION")));
+		assert!(output.stderr.is_empty());
+	}
+}
