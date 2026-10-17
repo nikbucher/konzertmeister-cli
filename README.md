@@ -168,7 +168,7 @@ All commands use these exit codes:
 
 | Code | Meaning |
 |------|---------|
-| `0` | Command succeeded or help was displayed |
+| `0` | Command succeeded or help/version was displayed |
 | `1` | Runtime error, such as a missing association profile or API failure |
 | `2` | Argument error, such as an unknown option or missing required argument |
 
@@ -177,6 +177,12 @@ All commands use these exit codes:
 ```sh
 km config path      # Print config file location
 km config edit      # Open config in $EDITOR
+```
+
+### Show version
+
+```sh
+km --version       # Print the installed CLI version, e.g. km 0.2.0
 ```
 
 ### Use a specific profile

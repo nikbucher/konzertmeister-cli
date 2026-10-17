@@ -2,7 +2,7 @@ use crate::model::Reply;
 use clap::{Parser, Subcommand, ValueEnum};
 
 #[derive(Parser)]
-#[command(name = "km", about = "Konzertmeister CLI — manage appointments for music associations")]
+#[command(name = "km", version, about = "Konzertmeister CLI — manage appointments for music associations")]
 pub struct Cli {
 	#[command(subcommand)]
 	pub command: Commands,
