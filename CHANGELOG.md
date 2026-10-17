@@ -7,9 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-18
+
 ### Added
 
 - `--version` / `-V` — print the installed CLI version
+- `just` recipes for common development tasks
+
+### Changed
+
+- Updated dependencies, including comfy-table 8
+
+### Fixed
+
+- Table styling compatibility with comfy-table 8
 
 ## [0.2.0] - 2026-09-29
 
