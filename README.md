@@ -182,7 +182,7 @@ km config edit      # Open config in $EDITOR
 ### Show version
 
 ```sh
-km --version       # Print the installed CLI version, e.g. km 0.2.0
+km --version       # Print the installed CLI version, e.g. km 0.3.0
 ```
 
 ### Use a specific profile
@@ -199,8 +199,8 @@ km appointment create --association other-association --template tmpl-abc --star
 Releases are automated via GitHub Actions. To create a new release:
 
 ```sh
-git tag -a v0.2.0 -m "v0.2.0"
-git push origin v0.2.0
+git tag -a v0.3.0 -m "v0.3.0"
+git push origin v0.3.0
 ```
 
 This triggers a build for all supported platforms and creates a GitHub Release with the binaries attached.
