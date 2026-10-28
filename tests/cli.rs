@@ -49,3 +49,23 @@ fn uc010_version_flag_prints_package_version() {
 		assert!(output.stderr.is_empty());
 	}
 }
+
+/// UC-011 | Main Success Scenario
+/// Business Rules: BR-001, BR-002
+#[test]
+fn uc011_completions_prints_script_for_each_shell() {
+	for shell in ["bash", "zsh", "fish", "elvish", "powershell"] {
+		let output = Command::new(env!("CARGO_BIN_EXE_km")).args(["completions", shell]).output().expect("run km");
+		assert!(output.status.success());
+		assert!(String::from_utf8_lossy(&output.stdout).contains("appointment"));
+		assert!(output.stderr.is_empty());
+	}
+}
+
+/// UC-011 | A1: Unsupported Shell
+#[test]
+fn uc011_unsupported_shell_is_rejected() {
+	let output = Command::new(env!("CARGO_BIN_EXE_km")).args(["completions", "cmd"]).output().expect("run km");
+	assert_eq!(output.status.code(), Some(2));
+	assert!(output.stdout.is_empty());
+}

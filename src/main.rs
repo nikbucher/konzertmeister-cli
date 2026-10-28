@@ -618,17 +618,6 @@ mod tests {
 		assert!(filter_replies(matched, Some(&Reply::Negative)).is_empty());
 	}
 
-	/// Shell completion script generation
-	#[test]
-	fn completions_command_generates_script() {
-		let Commands::Completions { shell } = Cli::parse_from(["km", "completions", "bash"]).command else {
-			panic!("Expected completions")
-		};
-		let mut buf = Vec::new();
-		clap_complete::generate(shell, &mut Cli::command(), "km", &mut buf);
-		assert!(String::from_utf8(buf).unwrap().contains("appointment"));
-	}
-
 	/// UC-009 | A1: Filter by Attendance
 	#[test]
 	fn uc009_attendance_filter_and_exclusive_flags() {

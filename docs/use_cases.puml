@@ -14,6 +14,7 @@ rectangle "km — Konzertmeister CLI" {
     usecase "List Replies\nUC-008" as UC008
     usecase "List Attendances\nUC-009" as UC009
     usecase "Show Version\nUC-010" as UC010
+    usecase "Generate Shell Completions\nUC-011" as UC011
 }
 
 admin --> UC001
@@ -26,5 +27,6 @@ admin --> UC007
 admin --> UC008
 admin --> UC009
 admin --> UC010
+admin --> UC011
 
 @enduml

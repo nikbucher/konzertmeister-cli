@@ -141,3 +141,12 @@ Tests follow the naming convention documented in [CONTRIBUTING.md](../../CONTRIB
 | Main Success Scenario | `cli::uc010_version_flag_prints_package_version` | ✅ Integration |
 | BR-001: Version Source and Format | `cli::uc010_version_flag_prints_package_version` | ✅ Integration |
 | BR-002: No Association Required | `cli::uc010_version_flag_prints_package_version` | ✅ Integration (exit code); no-config run not isolated |
+
+## UC-011: Generate Shell Completions
+
+| Scenario / Business Rule | Test(s) | Status |
+|--------------------------|---------|--------|
+| Main Success Scenario | `cli::uc011_completions_prints_script_for_each_shell` | ✅ Integration |
+| A1: Unsupported Shell | `cli::uc011_unsupported_shell_is_rejected` | ✅ Integration |
+| BR-001: Completion Scope | `cli::uc011_completions_prints_script_for_each_shell` | ✅ Integration (subcommand present); option values not asserted |
+| BR-002: No Association Required | `cli::uc011_completions_prints_script_for_each_shell` | ✅ Integration (runs without config) |
