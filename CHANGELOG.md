@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `km completions <shell>` — print a tab completion script for bash, zsh, fish, elvish or PowerShell
+
 ## [0.3.0] - 2026-10-18
 
 ### Added

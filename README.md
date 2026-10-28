@@ -179,6 +179,18 @@ km config path      # Print config file location
 km config edit      # Open config in $EDITOR
 ```
 
+### Shell completion
+
+Generate a completion script for bash, zsh, fish, elvish or PowerShell and install it once:
+
+```sh
+km completions zsh > ~/.zfunc/_km    # add `fpath+=~/.zfunc` before `compinit` in ~/.zshrc
+km completions bash > ~/.local/share/bash-completion/completions/km
+km completions fish > ~/.config/fish/completions/km.fish
+```
+
+After restarting the shell, `km app<TAB>` completes subcommands, flags and values such as `--format`.
+
 ### Show version
 
 ```sh
