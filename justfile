@@ -18,8 +18,8 @@ lint:
 test *filter:
     cargo test {{filter}}
 
-# Run the same checks as CI
-ci: fmt-check lint test
+# Run all checks (format, lint, tests), same as CI
+check: fmt-check lint test
 
 # Build a debug binary
 build:
