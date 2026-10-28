@@ -35,6 +35,12 @@ pub enum Commands {
 		#[command(subcommand)]
 		action: AttendanceAction,
 	},
+	/// Print a shell completion script
+	Completions {
+		/// Target shell
+		#[arg(value_enum)]
+		shell: clap_complete::Shell,
+	},
 }
 
 #[derive(Subcommand)]

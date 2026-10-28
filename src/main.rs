@@ -5,7 +5,7 @@ mod model;
 mod output;
 
 use anyhow::Context;
-use clap::Parser;
+use clap::{CommandFactory, Parser};
 
 use cli::{
 	AppointmentAction, AttendanceAction, AttendanceListArgs, Cli, Commands, ConfigAction, CreateArgs, ListArgs, MemberAction, MemberListArgs, MemberWriteArgs, OutputFormat, ReplyAction, ReplyListArgs,
@@ -43,6 +43,10 @@ fn run() -> anyhow::Result<()> {
 		Commands::Attendance { action } => match action {
 			AttendanceAction::List(args) => handle_attendance_list(args),
 		},
+		Commands::Completions { shell } => {
+			clap_complete::generate(shell, &mut Cli::command(), "km", &mut std::io::stdout());
+			Ok(())
+		}
 	}
 }
 
@@ -612,6 +616,17 @@ mod tests {
 		let matched = filter_replies(replies, args.reply.as_ref());
 		assert_eq!(matched.len(), 1);
 		assert!(filter_replies(matched, Some(&Reply::Negative)).is_empty());
+	}
+
+	/// Shell completion script generation
+	#[test]
+	fn completions_command_generates_script() {
+		let Commands::Completions { shell } = Cli::parse_from(["km", "completions", "bash"]).command else {
+			panic!("Expected completions")
+		};
+		let mut buf = Vec::new();
+		clap_complete::generate(shell, &mut Cli::command(), "km", &mut buf);
+		assert!(String::from_utf8(buf).unwrap().contains("appointment"));
 	}
 
 	/// UC-009 | A1: Filter by Attendance
