@@ -13,6 +13,7 @@ Filenames start with the feature name and end with the stable use case ID, so th
 | Feature | Use Case | Actor | Status | ID |
 |---------|----------|-------|--------|----|
 | Association | [Configure Association Profile](association-profile-configure-UC-001.md) | Association Admin | Implemented | UC-001 |
+| CLI | [Generate Shell Completions](cli-completions-generate-UC-011.md) | Association Admin | Implemented | UC-011 |
 | CLI | [Show Version](cli-version-show-UC-010.md) | Association Admin | Implemented | UC-010 |
 | Appointment | Batch Create Appointments | Association Admin | Planned | UC-004 |
 | Appointment | [Create Appointment](appointment-create-UC-003.md) | Association Admin | Implemented | UC-003 |

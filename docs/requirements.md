@@ -26,6 +26,7 @@
 | FR-020 | Reply table | As an association admin, I want a reply table with name, email, reply, comment, and reply time so that I can scan responses in the terminal. | Low | Implemented |
 | FR-021 | Attendance table | As an association admin, I want an attendance table with name, email, attendance state, and comment so that I can scan recorded participation in the terminal. | Low | Implemented |
 | FR-022 | Show version | As an association admin, I want to check the installed CLI version so that I can confirm which release I am running when reporting issues or upgrading. | Low | Implemented |
+| FR-023 | Shell completion | As an association admin, I want to generate a tab completion script for my shell so that I can complete commands, options, and option values with the Tab key. | Low | Implemented |
 
 ## Non-Functional Requirements
 

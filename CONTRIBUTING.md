@@ -65,7 +65,7 @@ Omit the doc comment only if the use case mapping is already fully expressed by 
 Make sure CI passes before submitting:
 
 ```sh
-cargo fmt --check
-cargo clippy -- -D warnings
-cargo test
+just check
 ```
+
+This runs `cargo fmt --check`, `cargo clippy -- -D warnings`, and `cargo test`. Run `just` to list all recipes.
